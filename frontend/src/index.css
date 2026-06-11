@@ -1,0 +1,162 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Geist font faces (local from node_modules) ──────────────────────────── */
+@font-face {
+  font-family: 'Geist';
+  src: url('../node_modules/geist/dist/fonts/geist-sans/Geist-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('../node_modules/geist/dist/fonts/geist-mono/GeistMono-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ── Theme tokens (RGB channels for Tailwind opacity support) ────────────── */
+@layer base {
+  :root {
+    /* Light — warm cream/espresso editorial palette */
+    --brand-brown:        200 149 90;
+    --brand-brown-dark:   168 116 64;
+    --brand-orange:       232 168 112;
+    --brand-orange-dark:  212 144 96;
+    --brand-grey:         228 224 219;
+    --brand-dark:         28 26 23;
+    --brand-grey-light:   247 244 240;
+    --brand-grey-dark:    138 132 124;
+
+    --surface-base:    247 244 240;
+    --surface-raised:  255 255 255;
+    --surface-sunken:  237 233 227;
+    --text-primary:    28 26 23;
+    --text-secondary:  74 69 64;
+    --text-muted:      138 132 124;
+  }
+
+  .dark {
+    /* Dark — deep espresso with warm brown accent */
+    --brand-brown:        200 149 90;
+    --brand-brown-dark:   224 168 112;
+    --brand-orange:       224 168 112;
+    --brand-orange-dark:  200 144 88;
+    --brand-grey:         46 41 32;
+    --brand-dark:         240 237 232;
+    --brand-grey-light:   22 20 16;
+    --brand-grey-dark:    107 100 89;
+
+    --surface-base:    22 20 16;
+    --surface-raised:  30 27 23;
+    --surface-sunken:  14 12 10;
+    --text-primary:    240 237 232;
+    --text-secondary:  184 176 166;
+    --text-muted:      107 100 89;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    @apply font-sans text-brand-dark bg-brand-grey-light;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { @apply bg-brand-grey; }
+  ::-webkit-scrollbar-thumb { @apply bg-brand-grey-dark rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-brand-brown; }
+}
+
+/* ── Reusable component classes ──────────────────────────────────────────── */
+@layer components {
+  .btn-primary {
+    @apply bg-brand-brown text-white px-5 py-2.5 rounded-xl font-medium
+           hover:bg-brand-brown-dark active:scale-[0.98]
+           transition-all duration-200 ease-spring
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply bg-surface-raised text-brand-dark border border-brand-grey
+           px-5 py-2.5 rounded-xl font-medium
+           hover:bg-brand-grey active:scale-[0.98]
+           transition-all duration-200 ease-spring;
+  }
+  .btn-ghost {
+    @apply text-brand-dark px-5 py-2.5 rounded-xl font-medium
+           hover:bg-brand-grey active:scale-[0.98]
+           transition-all duration-200 ease-spring;
+  }
+  .card {
+    @apply bg-surface-raised rounded-2xl shadow-card p-5;
+  }
+  .input {
+    @apply w-full border border-brand-grey rounded-xl px-4 py-2.5 text-sm
+           bg-surface-raised text-brand-dark
+           focus:outline-none focus:border-brand-brown focus:ring-2 focus:ring-brand-brown/20
+           transition-all duration-200 ease-spring;
+  }
+  .label {
+    @apply block text-sm font-medium text-brand-dark mb-1.5;
+  }
+  .sidebar-tab {
+    @apply flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium
+           text-brand-grey-dark hover:bg-brand-grey cursor-pointer
+           transition-colors duration-150 ease-spring;
+  }
+  .sidebar-tab.active {
+    @apply bg-brand-brown/10 text-brand-brown;
+  }
+  .furniture-card {
+    @apply bg-surface-raised rounded-xl border border-brand-grey
+           hover:border-brand-brown hover:shadow-card-hover
+           transition-all duration-200 ease-spring cursor-pointer overflow-hidden;
+  }
+  .furniture-card.selected {
+    @apply border-brand-brown shadow-card-hover ring-2 ring-brand-brown/30;
+  }
+}
+
+/* ── Three.js canvas ─────────────────────────────────────────────────────── */
+#room-canvas { display: block; width: 100%; height: 100%; cursor: grab; }
+#room-canvas:active { cursor: grabbing; }
+
+/* ── Page entry transition ───────────────────────────────────────────────── */
+.page-enter { animation: fadeIn 0.25s cubic-bezier(0.32, 0.72, 0, 1); }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Scroll-reveal (IntersectionObserver driven) ─────────────────────────── */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(3rem);
+  filter: blur(8px);
+  transition:
+    opacity 0.65s cubic-bezier(0.32, 0.72, 0, 1),
+    transform 0.65s cubic-bezier(0.32, 0.72, 0, 1),
+    filter 0.65s cubic-bezier(0.32, 0.72, 0, 1);
+}
+[data-reveal].revealed {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+[data-reveal][data-delay='100'] { transition-delay: 0.1s; }
+[data-reveal][data-delay='150'] { transition-delay: 0.15s; }
+[data-reveal][data-delay='200'] { transition-delay: 0.2s; }
+[data-reveal][data-delay='300'] { transition-delay: 0.3s; }
+[data-reveal][data-delay='400'] { transition-delay: 0.4s; }
+
+/* ── Toast slide-up ──────────────────────────────────────────────────────── */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(0.75rem); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-up { animation: slideUp 0.3s cubic-bezier(0.32, 0.72, 0, 1) both; }
