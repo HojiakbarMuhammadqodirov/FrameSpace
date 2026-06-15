@@ -2,12 +2,12 @@ import { Link } from 'react-router-dom'
 import { House, ArrowLeft, Images, ArrowRight } from '@phosphor-icons/react'
 
 const ROOMS = [
-  { label: 'Living Room', style: 'Modern · Minimalist', bg: '#E8D5C0' },
-  { label: 'Bedroom',     style: 'Scandinavian · Cozy',  bg: '#D0CECE' },
-  { label: 'Home Office', style: 'Industrial · Clean',   bg: '#C8D0D4' },
-  { label: 'Dining Room', style: 'Warm · Traditional',   bg: '#D4C8B8' },
-  { label: 'Studio Flat', style: 'Compact · Smart',      bg: '#CCCaC0' },
-  { label: 'Kids Room',   style: 'Playful · Bright',     bg: '#D0D8C8' },
+  { label: 'Living Room', style: 'Modern · Minimalist', img: 'https://www.marthastewart.com/thmb/lxfu2-95SWCS0jwciHs1mkbsGUM=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/modern-living-rooms-wb-1-bc45b0dc70e541f0ba40364ae6bd8421.jpg' },
+  { label: 'Bedroom',     style: 'Scandinavian · Cozy',  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTi2Eq9URdcBa217uRJA44G1GAZm71G-fKGmcZCp41BQz8Oa9DOB7Ooq1P4&s=10' },
+  { label: 'Home Office', style: 'Industrial · Clean',   img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSHuYkm6I97FnLgENno6KFqAcvtwPvtrHULA2oj5s0UKA&s=10' },
+  { label: 'Dining Room', style: 'Warm · Traditional',   img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQHo6YfBqzx0XnlkX3EEQJSM-rdeRjriMOC03t44-1AjQ&s=10' },
+  { label: 'Studio Flat', style: 'Compact · Smart',      img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQSIS4OfpT8YAnQeo0GqtU8_zwKV1d_e5wbA_pT2l3CXdcsoP--dCl_hyw&s=10' },
+  { label: 'Kids Room',   style: 'Playful · Bright',     img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-bpfOLOZVbIhlyYBAvTEti5T0MKe9kYYngOiRlflErxhu4KB_7FaDMWbm&s=10' },
 ]
 
 export default function Inspiration() {
@@ -41,12 +41,24 @@ export default function Inspiration() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {ROOMS.map(r => (
             <div key={r.label} className="group rounded-2xl border border-brand-grey overflow-hidden bg-surface-raised cursor-pointer hover:border-brand-brown hover:shadow-card-hover transition-all ease-spring duration-200">
-              <div className="h-40 transition-transform duration-300 group-hover:scale-[1.03] origin-center"
-                style={{ background: `linear-gradient(145deg, ${r.bg}, ${r.bg}88)` }} />
-              <div className="p-4">
-                <p className="font-medium text-sm text-brand-dark">{r.label}</p>
+              
+              {/* FIX: Rasm konteynerining ichki qismi toʻgʻrilandi, haqiqiy img tagiga o'tildi */}
+              <div className="h-40 w-full overflow-hidden relative">
+                <img 
+                  src={r.img} 
+                  alt={r.label}
+                  className="w-full h-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.05]"
+                  loading="lazy"
+                />
+                {/* Silliq qoraytirish overlay qatlami premium ko'rinish beradi */}
+                <div className="absolute inset-0 bg-brand-dark/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              </div>
+
+              <div className="p-4 relative z-10 bg-surface-raised">
+                <p className="font-medium text-sm text-brand-dark group-hover:text-brand-brown transition-colors duration-200">{r.label}</p>
                 <p className="text-xs text-brand-grey-dark mt-0.5">{r.style}</p>
               </div>
+
             </div>
           ))}
         </div>

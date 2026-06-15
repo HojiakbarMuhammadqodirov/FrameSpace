@@ -2,10 +2,10 @@ import { Link } from 'react-router-dom'
 import { House, ArrowLeft, Sparkle, Users, Globe } from '@phosphor-icons/react'
 
 const STATS = [
-  { label: 'Rooms designed', value: '12,000+' },
-  { label: 'Furniture pieces',  value: '60+' },
-  { label: 'Countries',         value: '28' },
-  { label: 'Happy designers',   value: '4,800+' },
+  { label: 'Rooms designed', value: '500+' },
+  { label: 'Furniture pieces',  value: '100+' },
+  { label: 'Countries',         value: '5+' },
+  { label: 'Happy designers',   value: '1000+' },
 ]
 
 export default function About() {
