@@ -3,6 +3,7 @@ import {
   Plant, PaintBrush, House, GridNine, ShoppingCart, ArrowSquareOut, X, FilePdf,
 } from '@phosphor-icons/react'
 import useStore from '../../store/useStore'
+import { useLang } from '../../i18n/LanguageProvider'
 
 function CategoryIcon({ category, size = 18 }: { category: string; size?: number }) {
   const w = 'regular' as const
@@ -57,6 +58,7 @@ async function exportCartPDF(items: { name: string; itemData?: { category?: stri
 
 export default function CartPanel() {
   const { placedFurniture, catalog, removeFurniture, totalCost, currentRoom } = useStore()
+  const { t } = useLang()
 
   const items = placedFurniture.map(pf => ({
     ...pf,
@@ -68,8 +70,8 @@ export default function CartPanel() {
       <div className="w-12 h-12 bg-brand-brown/10 rounded-xl flex items-center justify-center mx-auto mb-3">
         <ShoppingCart size={24} weight="regular" className="text-brand-brown" />
       </div>
-      <p className="text-sm font-medium text-brand-dark mb-1">Cart is empty</p>
-      <p className="text-xs text-brand-grey-dark">Add items from the Browse or AI tabs</p>
+      <p className="text-sm font-medium text-brand-dark mb-1">{t('panels.cartEmpty')}</p>
+      <p className="text-xs text-brand-grey-dark">{t('panels.cartEmptyDesc')}</p>
     </div>
   )
 
@@ -77,7 +79,7 @@ export default function CartPanel() {
     <div className="flex flex-col h-full">
       <div className="p-3 border-b border-brand-grey flex-shrink-0">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-semibold text-brand-dark">{items.length} items</span>
+          <span className="text-sm font-semibold text-brand-dark">{items.length} {t('panels.itemsCount')}</span>
           <span className="text-base font-bold text-brand-brown font-mono tabular-nums">
             ${totalCost().toLocaleString()}
           </span>
@@ -125,7 +127,7 @@ export default function CartPanel() {
 
       <div className="p-3 border-t border-brand-grey space-y-2 flex-shrink-0">
         <div className="flex justify-between text-sm">
-          <span className="text-brand-grey-dark">Total estimate</span>
+          <span className="text-brand-grey-dark">{t('panels.totalEstimate')}</span>
           <span className="font-bold text-brand-dark font-mono tabular-nums">${totalCost().toLocaleString()}</span>
         </div>
         <button
@@ -133,7 +135,7 @@ export default function CartPanel() {
           className="btn-secondary w-full text-xs flex items-center justify-center gap-1.5"
         >
           <FilePdf size={13} weight="regular" />
-          Export PDF
+          {t('panels.exportPdf')}
         </button>
       </div>
     </div>

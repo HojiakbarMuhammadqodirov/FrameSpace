@@ -31,6 +31,7 @@ export default {
       fontFamily: {
         sans: ['Geist', 'system-ui', 'sans-serif'],
         mono: ['"Geist Mono"', 'ui-monospace', 'monospace'],
+        display: ['"Instrument Serif"', 'Georgia', 'serif'],
       },
       transitionTimingFunction: {
         spring: 'cubic-bezier(0.32, 0.72, 0, 1)',

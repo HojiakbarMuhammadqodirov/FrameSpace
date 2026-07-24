@@ -15,15 +15,16 @@ import CartPanel from '../components/furniture/CartPanel'
 import useStore from '../store/useStore'
 import { roomsApi, designsApi } from '../services/api'
 import { useAppToast } from '../hooks/useToastContext'
+import { useLang } from '../i18n/LanguageProvider'
 
 type Tab = 'room' | 'furniture' | 'selected' | 'recommendations' | 'cart'
 
-const TABS: { id: Tab; label: string; Icon: Icon }[] = [
-  { id: 'room',            label: 'Room',    Icon: House },
-  { id: 'furniture',       label: 'Browse',  Icon: Cube },
-  { id: 'recommendations', label: 'AI',      Icon: Sparkle },
-  { id: 'selected',        label: 'Edit',    Icon: PencilSimple },
-  { id: 'cart',            label: 'Cart',    Icon: ShoppingCart },
+const TABS: { id: Tab; tkey: string; Icon: Icon }[] = [
+  { id: 'room',            tkey: 'room',      Icon: House },
+  { id: 'furniture',       tkey: 'furniture', Icon: Cube },
+  { id: 'recommendations', tkey: 'ai',        Icon: Sparkle },
+  { id: 'selected',        tkey: 'edit',      Icon: PencilSimple },
+  { id: 'cart',            tkey: 'cart',      Icon: ShoppingCart },
 ]
 
 export default function RoomDesigner() {
@@ -31,6 +32,7 @@ export default function RoomDesigner() {
   const navigate = useNavigate()
   const { currentRoom, setCurrentRoom, placedFurniture, totalCost, selectedFurnitureId, designs, catalog, undo, redo, historyIndex, history } = useStore()
   const toast = useAppToast()
+  const { t } = useLang()
   const [activeTab, setActiveTab] = useState<Tab>('room')
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -48,11 +50,11 @@ export default function RoomDesigner() {
 
   useEffect(() => {
     if (!localStorage.getItem('fs-drag-hint')) {
-      const t = setTimeout(() => {
-        toast('Select Browse tab, then click a furniture item to place it in the scene', 'info', 6000)
+      const timer = setTimeout(() => {
+        toast(t('designer.dragHint'), 'info', 6000)
         localStorage.setItem('fs-drag-hint', '1')
       }, 2000)
-      return () => clearTimeout(t)
+      return () => clearTimeout(timer)
     }
   }, [])
 
@@ -100,9 +102,9 @@ export default function RoomDesigner() {
       } else {
         await designsApi.create(payload)
       }
-      toast('Design saved', 'success')
+      toast(t('designer.designSaved'), 'success')
       setShowSaveModal(false)
-    } catch { toast('Save failed', 'error') } finally { setSaving(false) }
+    } catch { toast(t('designer.saveFailed'), 'error') } finally { setSaving(false) }
   }
 
   const handleShare = async () => {
@@ -110,15 +112,15 @@ export default function RoomDesigner() {
       const rid = typeof d.roomId === 'string' ? d.roomId : (d.roomId as { _id: string })._id
       return currentRoom && rid === currentRoom._id
     })
-    if (!existingDesign) { toast('Save your design first before sharing', 'info'); return }
+    if (!existingDesign) { toast(t('designer.saveFirst'), 'info'); return }
     setSharing(true)
     try {
       const res = await designsApi.share(existingDesign._id)
       const url = `${window.location.origin}/shared/${res.data.shareToken}`
       setShareUrl(url)
       await navigator.clipboard.writeText(url).catch(() => {})
-      toast('Share link copied to clipboard', 'success')
-    } catch { toast('Could not generate share link', 'error') } finally { setSharing(false) }
+      toast(t('designer.shareCopied'), 'success')
+    } catch { toast(t('designer.shareFailed'), 'error') } finally { setSharing(false) }
   }
 
   return (
@@ -130,16 +132,16 @@ export default function RoomDesigner() {
         <div className={`flex-shrink-0 bg-surface-raised border-r border-brand-grey flex flex-col transition-all ease-spring duration-300 ${sidebarOpen ? 'w-72' : 'w-0 overflow-hidden'}`}>
           {/* Tab nav */}
           <div className="flex border-b border-brand-grey flex-shrink-0">
-            {TABS.map(t => (
-              <button key={t.id} onClick={() => setActiveTab(t.id)}
-                title={t.label}
+            {TABS.map(tab => (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                title={t(`designer.tabs.${tab.tkey}`)}
                 className={`flex-1 py-2.5 flex flex-col items-center gap-0.5 text-xs font-medium transition-colors ease-spring duration-150 border-b-2 ${
-                  activeTab === t.id
+                  activeTab === tab.id
                     ? 'border-brand-brown text-brand-brown bg-brand-brown/5'
                     : 'border-transparent text-brand-grey-dark hover:text-brand-dark hover:bg-brand-grey'
                 }`}>
-                <t.Icon size={16} weight="regular" />
-                <span className="text-[10px] leading-tight">{t.label}</span>
+                <tab.Icon size={16} weight="regular" />
+                <span className="text-[10px] leading-tight">{t(`designer.tabs.${tab.tkey}`)}</span>
               </button>
             ))}
           </div>
@@ -199,19 +201,19 @@ export default function RoomDesigner() {
                 disabled={!currentRoom}
               >
                 <FloppyDisk size={13} weight="regular" />
-                Save
+                {t('designer.save')}
               </button>
               <button
                 onClick={handleShare}
                 disabled={sharing || !currentRoom}
-                title="Share design"
+                title={t('designer.shareDesign')}
                 className="btn-secondary text-xs py-1.5 px-2.5 flex items-center gap-1 disabled:opacity-40"
               >
                 <ShareNetwork size={13} weight="regular" />
               </button>
               <button
                 onClick={() => setShowShortcuts(s => !s)}
-                title="Keyboard shortcuts (?)"
+                title={t('designer.shortcuts') + ' (?)'}
                 className="w-6 h-6 flex items-center justify-center rounded-lg text-brand-grey-dark hover:text-brand-dark hover:bg-brand-grey transition-colors ease-spring duration-150"
               >
                 <Question size={13} weight="regular" />
@@ -250,8 +252,8 @@ export default function RoomDesigner() {
           <div className="bg-surface-raised rounded-2xl shadow-2xl w-full max-w-sm p-6 animate-slide-up" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-5">
               <div>
-                <p className="text-[10px] font-semibold text-brand-brown uppercase tracking-[0.12em] mb-0.5">Designer</p>
-                <h3 className="text-lg font-bold text-brand-dark tracking-tight">Keyboard shortcuts</h3>
+                <p className="text-[10px] font-semibold text-brand-brown uppercase tracking-[0.12em] mb-0.5">{t('designer.designWord')}</p>
+                <h3 className="text-lg font-bold text-brand-dark tracking-tight">{t('designer.shortcuts')}</h3>
               </div>
               <button onClick={() => setShowShortcuts(false)} className="w-8 h-8 flex items-center justify-center rounded-lg text-brand-grey-dark hover:bg-brand-grey transition-colors ease-spring duration-150">
                 <X size={16} weight="regular" />
@@ -259,12 +261,12 @@ export default function RoomDesigner() {
             </div>
             <div className="space-y-1">
               {[
-                ['Ctrl + Z', 'Undo'],
-                ['Ctrl + Y', 'Redo'],
-                ['Shift + drag', 'Free drag (bypass snap)'],
-                ['W A S D', 'Walk-through movement'],
-                ['ESC', 'Exit walk mode / close panel'],
-                ['?', 'Toggle this panel'],
+                ['Ctrl + Z', t('designer.keys.undo')],
+                ['Ctrl + Y', t('designer.keys.redo')],
+                ['Shift + drag', t('designer.keys.freeDrag')],
+                ['W A S D', t('designer.keys.walk')],
+                ['ESC', t('designer.keys.exit')],
+                ['?', t('designer.keys.toggle')],
               ].map(([key, label]) => (
                 <div key={key} className="flex items-center justify-between py-1.5">
                   <span className="text-sm text-brand-grey-dark">{label}</span>
@@ -283,8 +285,8 @@ export default function RoomDesigner() {
           <div className="bg-surface-raised rounded-2xl shadow-2xl w-full max-w-sm p-6 animate-slide-up" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-[10px] font-semibold text-brand-brown uppercase tracking-[0.12em] mb-0.5">Design</p>
-                <h3 className="text-lg font-bold text-brand-dark tracking-tight">Save design</h3>
+                <p className="text-[10px] font-semibold text-brand-brown uppercase tracking-[0.12em] mb-0.5">{t('designer.designLabel')}</p>
+                <h3 className="text-lg font-bold text-brand-dark tracking-tight">{t('designer.saveDesign')}</h3>
               </div>
               <button
                 onClick={() => setShowSaveModal(false)}
@@ -293,24 +295,24 @@ export default function RoomDesigner() {
                 <X size={16} weight="regular" />
               </button>
             </div>
-            <label className="label">Design name</label>
+            <label className="label">{t('designer.designName')}</label>
             <input className="input mb-4" value={designName} onChange={e => setDesignName(e.target.value)}
-              placeholder="My room design" />
+              placeholder={t('designer.designNamePlaceholder')} />
             <div className="text-sm text-brand-grey-dark mb-4 font-mono">
-              {placedFurniture.length} items · ${totalCost().toLocaleString()}
+              {placedFurniture.length} {t('panels.itemsCount')} · ${totalCost().toLocaleString()}
             </div>
             <div className="flex gap-3">
-              <button onClick={() => setShowSaveModal(false)} className="btn-secondary flex-1">Cancel</button>
+              <button onClick={() => setShowSaveModal(false)} className="btn-secondary flex-1">{t('common.cancel')}</button>
               <button onClick={saveDesign} disabled={saving || !designName.trim()} className="btn-primary flex-1 flex items-center justify-center gap-2">
                 {saving ? (
                   <>
                     <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Saving...
+                    {t('designer.saving')}
                   </>
                 ) : (
                   <>
                     <FloppyDisk size={14} weight="regular" />
-                    Save design
+                    {t('designer.saveDesign')}
                   </>
                 )}
               </button>

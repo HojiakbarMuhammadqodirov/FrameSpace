@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { House, X, ArrowRight } from '@phosphor-icons/react'
 import { authApi } from '../../services/api'
 import useStore from '../../store/useStore'
+import { useLang } from '../../i18n/LanguageProvider'
 
 interface Props {
   onClose: () => void
@@ -16,6 +17,7 @@ export default function AuthModal({ onClose, initialMode = 'login' }: Props) {
   const [loading, setLoading] = useState(false)
   const { setAuth } = useStore()
   const navigate = useNavigate()
+  const { t } = useLang()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm(f => ({ ...f, [e.target.name]: e.target.value }))
@@ -26,9 +28,9 @@ export default function AuthModal({ onClose, initialMode = 'login' }: Props) {
     e.preventDefault()
     setError('')
     if (mode === 'signup') {
-      if (!form.name.trim()) return setError('Name is required')
-      if (form.password !== form.confirmPassword) return setError('Passwords do not match')
-      if (form.password.length < 6) return setError('Password must be at least 6 characters')
+      if (!form.name.trim()) return setError(t('auth.nameRequired'))
+      if (form.password !== form.confirmPassword) return setError(t('auth.passwordsNoMatch'))
+      if (form.password.length < 6) return setError(t('auth.passwordMin'))
     }
     setLoading(true)
     try {
@@ -40,7 +42,7 @@ export default function AuthModal({ onClose, initialMode = 'login' }: Props) {
       navigate('/dashboard')
     } catch (err: unknown) {
       const e = err as { response?: { data?: { message?: string; errors?: { msg: string }[] } } }
-      setError(e.response?.data?.errors?.[0]?.msg || e.response?.data?.message || 'Something went wrong')
+      setError(e.response?.data?.errors?.[0]?.msg || e.response?.data?.message || t('auth.somethingWrong'))
     } finally {
       setLoading(false)
     }
@@ -70,7 +72,7 @@ export default function AuthModal({ onClose, initialMode = 'login' }: Props) {
                   <div>
                     <p className="text-[10px] font-semibold text-brand-brown uppercase tracking-[0.12em]">FrameSpace</p>
                     <h2 className="text-lg font-bold text-brand-dark tracking-tight leading-tight">
-                      {mode === 'login' ? 'Welcome back' : 'Create account'}
+                      {mode === 'login' ? t('auth.welcomeBack') : t('auth.createAccount')}
                     </h2>
                   </div>
                 </div>
@@ -86,7 +88,7 @@ export default function AuthModal({ onClose, initialMode = 'login' }: Props) {
                     className={`flex-1 py-1.5 rounded-lg text-sm font-medium transition-all ease-spring duration-200 ${
                       mode === m ? 'bg-surface-raised shadow-sm text-brand-dark' : 'text-brand-grey-dark hover:text-brand-dark'
                     }`}>
-                    {m === 'login' ? 'Sign in' : 'Sign up'}
+                    {m === 'login' ? t('auth.signIn') : t('auth.signUp')}
                   </button>
                 ))}
               </div>
@@ -96,24 +98,24 @@ export default function AuthModal({ onClose, initialMode = 'login' }: Props) {
             <form onSubmit={handleSubmit} className="px-7 pb-7 space-y-4">
               {mode === 'signup' && (
                 <div>
-                  <label className="label">Full name</label>
+                  <label className="label">{t('auth.fullName')}</label>
                   <input name="name" value={form.name} onChange={handleChange}
-                    className="input" placeholder="Alex Johnson" autoFocus={mode === 'signup'} required />
+                    className="input" placeholder={t('auth.namePlaceholder')} autoFocus={mode === 'signup'} required />
                 </div>
               )}
               <div>
-                <label className="label">Email</label>
+                <label className="label">{t('auth.email')}</label>
                 <input name="email" type="email" value={form.email} onChange={handleChange}
                   className="input" placeholder="you@example.com" autoFocus={mode === 'login'} required />
               </div>
               <div>
-                <label className="label">Password</label>
+                <label className="label">{t('auth.password')}</label>
                 <input name="password" type="password" value={form.password} onChange={handleChange}
                   className="input" placeholder="••••••••" required />
               </div>
               {mode === 'signup' && (
                 <div>
-                  <label className="label">Confirm password</label>
+                  <label className="label">{t('auth.confirmPassword')}</label>
                   <input name="confirmPassword" type="password" value={form.confirmPassword}
                     onChange={handleChange} className="input" placeholder="••••••••" required />
                 </div>
@@ -129,11 +131,11 @@ export default function AuthModal({ onClose, initialMode = 'login' }: Props) {
                 {loading ? (
                   <>
                     <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    {mode === 'login' ? 'Signing in...' : 'Creating account...'}
+                    {mode === 'login' ? t('auth.signingIn') : t('auth.creatingAccount')}
                   </>
                 ) : (
                   <>
-                    {mode === 'login' ? 'Sign in' : 'Create account'}
+                    {mode === 'login' ? t('auth.signIn') : t('auth.createAccount')}
                     <ArrowRight size={14} weight="bold" />
                   </>
                 )}

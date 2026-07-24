@@ -5,6 +5,7 @@ import {
 } from '@phosphor-icons/react'
 import useStore from '../../store/useStore'
 import { furnitureApi } from '../../services/api'
+import { useLang } from '../../i18n/LanguageProvider'
 import type { FurnitureItem } from '../../types'
 
 function CategoryIcon({ category, size = 18 }: { category: string; size?: number }) {
@@ -26,6 +27,7 @@ function CategoryIcon({ category, size = 18 }: { category: string; size?: number
 
 export default function RecommendationsPanel() {
   const { currentRoom, recommendations, setRecommendations, addFurniture } = useStore()
+  const { t } = useLang()
   const [loading, setLoading] = useState(false)
 
   const fetchRecs = async () => {
@@ -62,7 +64,7 @@ export default function RecommendationsPanel() {
     <div className="flex flex-col h-full">
       <div className="p-3 border-b border-brand-grey flex-shrink-0">
         <p className="text-xs text-brand-grey-dark mb-2">
-          AI-powered recommendations based on your room's size, style, lighting, and budget.
+          {t('recommendations.intro')}
         </p>
         <button
           onClick={fetchRecs}
@@ -72,16 +74,16 @@ export default function RecommendationsPanel() {
           {loading ? (
             <>
               <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              Generating...
+              {t('recommendations.generating')}
             </>
           ) : (
             <>
               <Sparkle size={15} weight="regular" />
-              Get recommendations
+              {t('recommendations.getRecs')}
             </>
           )}
         </button>
-        {!currentRoom && <p className="text-xs text-red-400 mt-1 text-center">Select a room first</p>}
+        {!currentRoom && <p className="text-xs text-red-400 mt-1 text-center">{t('recommendations.selectRoomFirst')}</p>}
       </div>
 
       <div className="flex-1 overflow-y-auto p-2">
@@ -91,7 +93,7 @@ export default function RecommendationsPanel() {
               <Sparkle size={24} weight="regular" className="text-brand-brown" />
             </div>
             <p className="text-sm text-brand-grey-dark">
-              Click above to get personalized furniture recommendations
+              {t('recommendations.emptyHint')}
             </p>
           </div>
         ) : (

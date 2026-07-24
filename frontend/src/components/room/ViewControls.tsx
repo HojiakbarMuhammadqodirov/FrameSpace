@@ -1,19 +1,14 @@
 import { useState } from 'react'
 import { Footprints } from '@phosphor-icons/react'
 import useStore from '../../store/useStore'
+import { useLang } from '../../i18n/LanguageProvider'
 import type { ViewMode } from '../../types'
 
-const VIEWS: { mode: ViewMode; label: string }[] = [
-  { mode: 'default',    label: 'Default' },
-  { mode: 'free',       label: 'Free' },
-  { mode: 'front',      label: 'Front' },
-  { mode: 'side-left',  label: 'Left' },
-  { mode: 'side-right', label: 'Right' },
-  { mode: 'top',        label: 'Top' },
-]
+const VIEW_MODES: ViewMode[] = ['default', 'free', 'front', 'side-left', 'side-right', 'top']
 
 export default function ViewControls() {
   const { viewMode, setViewMode, showGrid, toggleGrid, snapToGrid, toggleSnap } = useStore()
+  const { t } = useLang()
   const [walkActive, setWalkActive] = useState(false)
 
   const handleWalk = () => {
@@ -30,18 +25,18 @@ export default function ViewControls() {
   return (
     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20 flex-wrap justify-center px-4">
       <div className="flex bg-surface-raised/90 backdrop-blur-sm rounded-xl shadow-float border border-brand-grey/50 p-1 gap-1">
-        {VIEWS.map(v => (
+        {VIEW_MODES.map(mode => (
           <button
-            key={v.mode}
-            onClick={() => setViewMode(v.mode)}
-            title={v.label}
+            key={mode}
+            onClick={() => setViewMode(mode)}
+            title={t(`viewControls.views.${mode}`)}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ease-spring duration-150 active:scale-[0.98] ${
-              viewMode === v.mode
+              viewMode === mode
                 ? 'bg-brand-brown text-white'
                 : 'text-brand-grey-dark hover:bg-brand-grey hover:text-brand-dark'
             }`}
           >
-            {v.label}
+            {t(`viewControls.views.${mode}`)}
           </button>
         ))}
       </div>
@@ -49,31 +44,31 @@ export default function ViewControls() {
       <div className="flex bg-surface-raised/90 backdrop-blur-sm rounded-xl shadow-float border border-brand-grey/50 p-1 gap-1">
         <button
           onClick={toggleGrid}
-          title="Toggle grid"
+          title={t('viewControls.gridTitle')}
           className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ease-spring duration-150 active:scale-[0.98] ${
             showGrid ? 'bg-brand-brown/10 text-brand-brown' : 'text-brand-grey-dark hover:bg-brand-grey'
           }`}
         >
-          Grid
+          {t('viewControls.grid')}
         </button>
         <button
           onClick={toggleSnap}
-          title="Snap to grid (hold Shift to bypass)"
+          title={t('viewControls.snapTitle')}
           className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ease-spring duration-150 active:scale-[0.98] ${
             snapToGrid ? 'bg-brand-brown/10 text-brand-brown' : 'text-brand-grey-dark hover:bg-brand-grey'
           }`}
         >
-          Snap
+          {t('viewControls.snap')}
         </button>
         <button
           onClick={handleWalk}
-          title="Walk-through mode (WASD to move, ESC to exit)"
+          title={t('viewControls.walkTitle')}
           className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ease-spring duration-150 active:scale-[0.98] flex items-center gap-1.5 ${
             walkActive ? 'bg-brand-brown text-white' : 'text-brand-grey-dark hover:bg-brand-grey'
           }`}
         >
           <Footprints size={12} weight="regular" />
-          Walk
+          {t('viewControls.walk')}
         </button>
       </div>
     </div>

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { House, Sun } from '@phosphor-icons/react'
 import useStore from '../../store/useStore'
 import { roomsApi } from '../../services/api'
+import { useLang } from '../../i18n/LanguageProvider'
 import type { Room, RoomWindow, RoomDoor } from '../../types'
 
 const WALL_COLORS = ['#F5F0EB','#FFFFFF','#E8E0D5','#D4C4B0','#C8D8E8','#E8D0C8','#D8E8D0','#2C2C2C']
@@ -10,6 +11,7 @@ const FLOOR_TYPES = ['hardwood','carpet','tile','concrete','laminate']
 
 export default function RoomEditor() {
   const { currentRoom, setCurrentRoom, upsertRoom } = useStore()
+  const { t } = useLang()
   const [saving, setSaving] = useState(false)
   const [section, setSection] = useState<'dims'|'style'|'windows'|'doors'|'light'>('dims')
   const [timeOfDay, setTimeHour] = useState(12)
@@ -19,7 +21,7 @@ export default function RoomEditor() {
       <div className="w-10 h-10 bg-brand-brown/10 rounded-xl flex items-center justify-center mx-auto mb-2">
         <House size={20} weight="regular" className="text-brand-brown" />
       </div>
-      <p className="text-sm">No room selected</p>
+      <p className="text-sm">{t('roomEditor.noRoom')}</p>
     </div>
   )
 
@@ -63,23 +65,17 @@ export default function RoomEditor() {
     fn?.(h)
   }
 
-  const sections = [
-    { id: 'dims',    label: 'Dims' },
-    { id: 'style',   label: 'Style' },
-    { id: 'windows', label: 'Windows' },
-    { id: 'doors',   label: 'Doors' },
-    { id: 'light',   label: 'Light' },
-  ] as const
+  const sections = ['dims', 'style', 'windows', 'doors', 'light'] as const
 
   return (
     <div className="flex flex-col h-full">
       <div className="flex gap-1 p-3 border-b border-brand-grey flex-shrink-0">
-        {sections.map(s => (
-          <button key={s.id} onClick={() => setSection(s.id)}
+        {sections.map(id => (
+          <button key={id} onClick={() => setSection(id)}
             className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ease-spring duration-150 ${
-              section === s.id ? 'bg-brand-brown text-white' : 'text-brand-grey-dark hover:bg-brand-grey'
+              section === id ? 'bg-brand-brown text-white' : 'text-brand-grey-dark hover:bg-brand-grey'
             }`}>
-            {s.label}
+            {t(`roomEditor.tabs.${id}`)}
           </button>
         ))}
       </div>
@@ -88,13 +84,13 @@ export default function RoomEditor() {
         {section === 'dims' && (
           <>
             <div>
-              <label className="label text-xs">Room name</label>
+              <label className="label text-xs">{t('roomEditor.roomName')}</label>
               <input className="input text-sm" value={currentRoom.name}
                 onChange={e => update({ name: e.target.value })} />
             </div>
             {(['width', 'depth', 'height'] as const).map(dim => (
               <div key={dim}>
-                <label className="label text-xs capitalize">{dim} (m)</label>
+                <label className="label text-xs">{t(`dashboard.${dim}`)} (m)</label>
                 <input type="number" className="input text-sm font-mono" step="0.1"
                   min={dim === 'height' ? 2 : 1} max={dim === 'height' ? 6 : 30}
                   value={currentRoom.dimensions[dim]}
@@ -102,30 +98,30 @@ export default function RoomEditor() {
               </div>
             ))}
             <div>
-              <label className="label text-xs">Room type</label>
+              <label className="label text-xs">{t('roomEditor.roomType')}</label>
               <select className="input text-sm" value={currentRoom.roomType}
                 onChange={e => update({ roomType: e.target.value as Room['roomType'] })}>
-                {['living','bedroom','dining','office','kitchen'].map(t => (
-                  <option key={t} value={t}>{t.charAt(0).toUpperCase()+t.slice(1)} Room</option>
+                {['living','bedroom','dining','office','kitchen'].map(rt => (
+                  <option key={rt} value={rt}>{t(`dashboard.roomTypes.${rt}`)}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="label text-xs">Style preference</label>
+              <label className="label text-xs">{t('roomEditor.stylePreference')}</label>
               <select className="input text-sm" value={currentRoom.stylePreference}
                 onChange={e => update({ stylePreference: e.target.value as Room['stylePreference'] })}>
                 {['minimalist','modern','cozy','luxury','industrial','scandinavian'].map(s => (
-                  <option key={s} value={s}>{s.charAt(0).toUpperCase()+s.slice(1)}</option>
+                  <option key={s} value={s}>{t(`dashboard.styles.${s}`)}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="label text-xs">Budget</label>
+              <label className="label text-xs">{t('roomEditor.budget')}</label>
               <select className="input text-sm" value={currentRoom.budget}
                 onChange={e => update({ budget: e.target.value as Room['budget'] })}>
-                <option value="budget">Budget</option>
-                <option value="mid-range">Mid-range</option>
-                <option value="premium">Premium</option>
+                <option value="budget">{t('dashboard.budgets.budget')}</option>
+                <option value="mid-range">{t('dashboard.budgets.mid-range')}</option>
+                <option value="premium">{t('dashboard.budgets.premium')}</option>
               </select>
             </div>
           </>
@@ -134,7 +130,7 @@ export default function RoomEditor() {
         {section === 'style' && (
           <>
             <div>
-              <label className="label text-xs">Wall color</label>
+              <label className="label text-xs">{t('roomEditor.wallColor')}</label>
               <div className="flex flex-wrap gap-2">
                 {WALL_COLORS.map(c => (
                   <button key={c} onClick={() => updateStyle({ wallColor: c })}
@@ -149,7 +145,7 @@ export default function RoomEditor() {
                 onChange={e => updateStyle({ wallColor: e.target.value })} />
             </div>
             <div>
-              <label className="label text-xs">Floor color</label>
+              <label className="label text-xs">{t('roomEditor.floorColor')}</label>
               <div className="flex flex-wrap gap-2">
                 {FLOOR_COLORS.map(c => (
                   <button key={c} onClick={() => updateStyle({ floorColor: c })}
@@ -164,16 +160,16 @@ export default function RoomEditor() {
                 onChange={e => updateStyle({ floorColor: e.target.value })} />
             </div>
             <div>
-              <label className="label text-xs">Floor type</label>
+              <label className="label text-xs">{t('roomEditor.floorType')}</label>
               <select className="input text-sm" value={currentRoom.style?.floorType || 'hardwood'}
                 onChange={e => updateStyle({ floorType: e.target.value as Room['style']['floorType'] })}>
-                {FLOOR_TYPES.map(t => (
-                  <option key={t} value={t}>{t.charAt(0).toUpperCase()+t.slice(1)}</option>
+                {FLOOR_TYPES.map(ft => (
+                  <option key={ft} value={ft}>{t(`roomEditor.floorTypes.${ft}`)}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="label text-xs">Ceiling color</label>
+              <label className="label text-xs">{t('roomEditor.ceilingColor')}</label>
               <input type="color" className="w-full h-8 rounded-lg cursor-pointer border border-brand-grey"
                 value={currentRoom.style?.ceilingColor || '#FFFFFF'}
                 onChange={e => updateStyle({ ceilingColor: e.target.value })} />
@@ -186,45 +182,45 @@ export default function RoomEditor() {
             {currentRoom.windows?.map((win, i) => (
               <div key={i} className="card p-3 !rounded-xl border border-brand-grey">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-semibold text-brand-dark">Window {i+1}</span>
-                  <button onClick={() => removeWindow(i)} className="text-red-400 hover:text-red-600 text-xs transition-colors ease-spring duration-150">Remove</button>
+                  <span className="text-xs font-semibold text-brand-dark">{t('roomEditor.window')} {i+1}</span>
+                  <button onClick={() => removeWindow(i)} className="text-red-400 hover:text-red-600 text-xs transition-colors ease-spring duration-150">{t('roomEditor.remove')}</button>
                 </div>
                 <div className="space-y-2">
                   <div>
-                    <label className="label text-xs">Wall</label>
+                    <label className="label text-xs">{t('roomEditor.wall')}</label>
                     <select className="input text-xs" value={win.wall}
                       onChange={e => updateWindow(i, { wall: e.target.value as RoomWindow['wall'] })}>
                       {['north','south','east','west'].map(w => (
-                        <option key={w} value={w}>{w.charAt(0).toUpperCase()+w.slice(1)}</option>
+                        <option key={w} value={w}>{t(`roomEditor.walls.${w}`)}</option>
                       ))}
                     </select>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="label text-xs">Width (m)</label>
+                      <label className="label text-xs">{t('roomEditor.widthM')}</label>
                       <input type="number" className="input text-xs font-mono" step="0.1" min="0.5" max="3"
                         value={win.width} onChange={e => updateWindow(i, { width: +e.target.value })} />
                     </div>
                     <div>
-                      <label className="label text-xs">Height (m)</label>
+                      <label className="label text-xs">{t('roomEditor.heightM')}</label>
                       <input type="number" className="input text-xs font-mono" step="0.1" min="0.3" max="2.5"
                         value={win.height} onChange={e => updateWindow(i, { height: +e.target.value })} />
                     </div>
                   </div>
                   <div>
-                    <label className="label text-xs">Position (0–1 along wall)</label>
+                    <label className="label text-xs">{t('roomEditor.positionAlong')}</label>
                     <input type="range" className="w-full" min="0.1" max="0.9" step="0.05"
                       value={win.position} onChange={e => updateWindow(i, { position: +e.target.value })} />
                   </div>
                   <div>
-                    <label className="label text-xs">Sill height (m)</label>
+                    <label className="label text-xs">{t('roomEditor.sillHeight')}</label>
                     <input type="number" className="input text-xs font-mono" step="0.05" min="0.3" max="1.5"
                       value={win.sillHeight} onChange={e => updateWindow(i, { sillHeight: +e.target.value })} />
                   </div>
                 </div>
               </div>
             ))}
-            <button onClick={addWindow} className="btn-secondary text-xs w-full">+ Add window</button>
+            <button onClick={addWindow} className="btn-secondary text-xs w-full">{t('roomEditor.addWindow')}</button>
           </>
         )}
 
@@ -233,33 +229,33 @@ export default function RoomEditor() {
             {currentRoom.doors?.map((door, i) => (
               <div key={i} className="card p-3 !rounded-xl border border-brand-grey">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-semibold text-brand-dark">Door {i+1}</span>
-                  <button onClick={() => removeDoor(i)} className="text-red-400 hover:text-red-600 text-xs transition-colors ease-spring duration-150">Remove</button>
+                  <span className="text-xs font-semibold text-brand-dark">{t('roomEditor.door')} {i+1}</span>
+                  <button onClick={() => removeDoor(i)} className="text-red-400 hover:text-red-600 text-xs transition-colors ease-spring duration-150">{t('roomEditor.remove')}</button>
                 </div>
                 <div className="space-y-2">
                   <div>
-                    <label className="label text-xs">Wall</label>
+                    <label className="label text-xs">{t('roomEditor.wall')}</label>
                     <select className="input text-xs" value={door.wall}
                       onChange={e => updateDoor(i, { wall: e.target.value as RoomDoor['wall'] })}>
                       {['north','south','east','west'].map(w => (
-                        <option key={w} value={w}>{w.charAt(0).toUpperCase()+w.slice(1)}</option>
+                        <option key={w} value={w}>{t(`roomEditor.walls.${w}`)}</option>
                       ))}
                     </select>
                   </div>
                   <div>
-                    <label className="label text-xs">Width (m)</label>
+                    <label className="label text-xs">{t('roomEditor.widthM')}</label>
                     <input type="number" className="input text-xs font-mono" step="0.05" min="0.7" max="1.5"
                       value={door.width} onChange={e => updateDoor(i, { width: +e.target.value })} />
                   </div>
                   <div>
-                    <label className="label text-xs">Position (0–1 along wall)</label>
+                    <label className="label text-xs">{t('roomEditor.positionAlong')}</label>
                     <input type="range" className="w-full" min="0.1" max="0.9" step="0.05"
                       value={door.position} onChange={e => updateDoor(i, { position: +e.target.value })} />
                   </div>
                 </div>
               </div>
             ))}
-            <button onClick={addDoor} className="btn-secondary text-xs w-full">+ Add door</button>
+            <button onClick={addDoor} className="btn-secondary text-xs w-full">{t('roomEditor.addDoor')}</button>
           </>
         )}
 
@@ -269,7 +265,7 @@ export default function RoomEditor() {
               <div className="flex items-center justify-between mb-2">
                 <label className="label text-xs flex items-center gap-1.5">
                   <Sun size={13} weight="regular" className="text-brand-brown" />
-                  Time of day
+                  {t('roomEditor.timeOfDay')}
                 </label>
                 <span className="text-xs font-mono text-brand-dark">
                   {String(timeOfDay).padStart(2, '0')}:00
@@ -282,13 +278,13 @@ export default function RoomEditor() {
                 className="w-full accent-[rgb(var(--brand-brown))]"
               />
               <div className="flex justify-between text-[10px] text-brand-grey-dark mt-1">
-                <span>Dawn 6am</span>
-                <span>Noon</span>
-                <span>Dusk 10pm</span>
+                <span>{t('roomEditor.dawn')}</span>
+                <span>{t('roomEditor.noon')}</span>
+                <span>{t('roomEditor.dusk')}</span>
               </div>
             </div>
             <p className="text-[11px] text-brand-grey-dark leading-relaxed">
-              Adjusts the sun angle and color temperature in real time. Dawn and dusk cast warm orange light; midday is bright white.
+              {t('roomEditor.lightNote')}
             </p>
           </>
         )}
@@ -296,7 +292,7 @@ export default function RoomEditor() {
 
       <div className="p-3 border-t border-brand-grey flex-shrink-0">
         <button onClick={save} disabled={saving} className="btn-primary w-full text-sm">
-          {saving ? 'Saving...' : 'Save room'}
+          {saving ? t('profile.saving') : t('roomEditor.saveRoom')}
         </button>
       </div>
     </div>

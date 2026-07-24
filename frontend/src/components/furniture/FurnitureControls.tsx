@@ -1,11 +1,13 @@
 import { CursorClick, Trash, ArrowSquareOut } from '@phosphor-icons/react'
 import useStore from '../../store/useStore'
+import { useLang } from '../../i18n/LanguageProvider'
 
 const COLORS = ['#8B7355','#D4A574','#9C8B6E','#4A4A4A','#FFFFFF','#F5F5DC','#708090','#8FBC8F','#CD853F','#B0C4DE','#DEB887','#2C3E50']
 const MATERIALS = ['fabric','leather','velvet','wood','metal','glass','plastic','rattan','marble']
 
 export default function FurnitureControls() {
   const { selectedFurnitureId, placedFurniture, catalog, updateFurniture, removeFurniture } = useStore()
+  const { t } = useLang()
 
   const selected = placedFurniture.find(f => (f._id || f.furnitureId) === selectedFurnitureId)
   const itemData = selected?.furnitureData || catalog.find(c => c._id === selected?.furnitureId)
@@ -15,8 +17,8 @@ export default function FurnitureControls() {
       <div className="w-12 h-12 bg-brand-grey rounded-xl flex items-center justify-center mx-auto mb-3">
         <CursorClick size={24} weight="regular" className="text-brand-grey-dark" />
       </div>
-      <p className="text-sm font-medium text-brand-dark">Select furniture</p>
-      <p className="text-xs mt-1">Click a piece in the 3D view to select it</p>
+      <p className="text-sm font-medium text-brand-dark">{t('furnitureControls.selectFurniture')}</p>
+      <p className="text-xs mt-1">{t('furnitureControls.clickToSelect')}</p>
     </div>
   )
 
@@ -51,7 +53,7 @@ export default function FurnitureControls() {
       <div className="flex-1 overflow-y-auto p-3 space-y-4">
         {/* Position */}
         <div>
-          <label className="label text-xs">Position</label>
+          <label className="label text-xs">{t('furnitureControls.position')}</label>
           <div className="grid grid-cols-3 gap-2">
             {(['x', 'y', 'z'] as const).map(axis => (
               <div key={axis}>
@@ -63,14 +65,14 @@ export default function FurnitureControls() {
             ))}
           </div>
           {itemData?.category === 'lighting' && (
-            <p className="text-[10px] text-brand-grey-dark mt-1">Set Y to table height to place a lamp on a surface</p>
+            <p className="text-[10px] text-brand-grey-dark mt-1">{t('furnitureControls.lampHint')}</p>
           )}
         </div>
 
         {/* Rotation */}
         <div>
           <label className="label text-xs">
-            Rotation <span className="font-mono">{selected.rotation}°</span>
+            {t('furnitureControls.rotation')} <span className="font-mono">{selected.rotation}°</span>
           </label>
           <input type="range" className="w-full accent-brand-brown" min="0" max="360" step="5"
             value={selected.rotation}
@@ -88,7 +90,7 @@ export default function FurnitureControls() {
         {/* Scale */}
         <div>
           <label className="label text-xs">
-            Scale <span className="font-mono">{(selected.scale || 1).toFixed(2)}×</span>
+            {t('furnitureControls.scale')} <span className="font-mono">{(selected.scale || 1).toFixed(2)}×</span>
           </label>
           <input type="range" className="w-full accent-brand-brown" min="0.5" max="2" step="0.05"
             value={selected.scale || 1}
@@ -97,7 +99,7 @@ export default function FurnitureControls() {
 
         {/* Color */}
         <div>
-          <label className="label text-xs">Color</label>
+          <label className="label text-xs">{t('furnitureControls.color')}</label>
           <div className="flex flex-wrap gap-2 mb-2">
             {COLORS.map(c => (
               <button key={c} onClick={() => update({ color: c })}
@@ -114,13 +116,13 @@ export default function FurnitureControls() {
 
         {/* Material */}
         <div>
-          <label className="label text-xs">Material</label>
+          <label className="label text-xs">{t('furnitureControls.material')}</label>
           <div className="flex flex-wrap gap-1">
             {MATERIALS.map(m => (
               <button key={m} onClick={() => update({ material: m })}
-                className={`px-2 py-1 rounded-lg text-xs font-medium capitalize transition-all ease-spring duration-150 ${
+                className={`px-2 py-1 rounded-lg text-xs font-medium transition-all ease-spring duration-150 ${
                   selected.material === m ? 'bg-brand-brown text-white' : 'bg-brand-grey text-brand-grey-dark hover:bg-brand-brown/10 hover:text-brand-brown'
-                }`}>{m}</button>
+                }`}>{t(`furnitureControls.materials.${m}`)}</button>
             ))}
           </div>
         </div>
@@ -130,7 +132,7 @@ export default function FurnitureControls() {
           <a href={itemData.sourceUrl} target="_blank" rel="noopener noreferrer"
             className="btn-secondary text-xs w-full flex items-center justify-center gap-2">
             <ArrowSquareOut size={13} weight="regular" />
-            Buy from {itemData.source}
+            {t('furnitureControls.buyFrom')} {itemData.source}
           </a>
         )}
       </div>

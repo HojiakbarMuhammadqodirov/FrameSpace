@@ -10,6 +10,7 @@ import RoomMinimap from '../components/room/RoomMinimap'
 import useStore from '../store/useStore'
 import { roomsApi, designsApi, templatesApi } from '../services/api'
 import { useAppToast } from '../hooks/useToastContext'
+import { useLang } from '../i18n/LanguageProvider'
 import type { Room, Design } from '../types'
 
 interface RoomTemplate {
@@ -26,6 +27,7 @@ export default function Dashboard() {
   const navigate = useNavigate()
   const { user, rooms, setRooms, designs, setDesigns, setCurrentRoom, clearPlacedFurniture, setPlacedFurniture } = useStore()
   const toast = useAppToast()
+  const { t } = useLang()
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'rooms' | 'designs'>('rooms')
   const [showCreateRoom, setShowCreateRoom] = useState(false)
@@ -48,7 +50,7 @@ export default function Dashboard() {
         setRooms(roomsRes.data)
         setDesigns(designsRes.data)
         setTemplates(tmplRes.data)
-      } catch { toast('Could not load your rooms — check your connection', 'error') } finally {
+      } catch { toast(t('dashboard.couldNotLoad'), 'error') } finally {
         setLoading(false)
       }
     }
@@ -71,15 +73,15 @@ export default function Dashboard() {
       setShowCreateRoom(false)
       setWizardStep(1)
       navigate(`/designer/${res.data._id}`)
-    } catch { toast('Could not create room — try again', 'error') } finally {
+    } catch { toast(t('dashboard.couldNotCreate'), 'error') } finally {
       setCreating(false)
     }
   }
 
   const closeWizard = () => { setShowCreateRoom(false); setWizardStep(1); setNewRoom({ name: '', width: 5, depth: 4, height: 2.7, roomType: 'living', stylePreference: 'modern', budget: 'mid-range' }) }
 
-  const applyTemplate = (t: RoomTemplate) => {
-    setNewRoom({ name: t.name, width: t.dimensions.width, depth: t.dimensions.depth, height: t.dimensions.height, roomType: t.roomType, stylePreference: t.stylePreference, budget: t.budget })
+  const applyTemplate = (tmpl: RoomTemplate) => {
+    setNewRoom({ name: tmpl.name, width: tmpl.dimensions.width, depth: tmpl.dimensions.depth, height: tmpl.dimensions.height, roomType: tmpl.roomType, stylePreference: tmpl.stylePreference, budget: tmpl.budget })
     setWizardStep(3)
   }
 
@@ -95,7 +97,7 @@ export default function Dashboard() {
       setShowGenerate(false)
       setGenerateText('')
       navigate(`/designer/${room._id}`)
-    } catch { toast('Could not generate room — try again', 'error') } finally { setGenerating(false) }
+    } catch { toast(t('dashboard.couldNotGenerate'), 'error') } finally { setGenerating(false) }
   }
 
   const handleOpenRoom = (room: Room) => {
@@ -117,7 +119,7 @@ export default function Dashboard() {
         furnitureData: typeof pf.furnitureId === 'object' ? pf.furnitureId : undefined,
       })))
       navigate(`/designer/${roomId}`)
-    } catch { toast('Could not load design — try again', 'error') }
+    } catch { toast(t('dashboard.couldNotLoadDesign'), 'error') }
   }
 
   const confirmDelete = (id: string, type: 'room' | 'design', name: string) => {
@@ -137,7 +139,7 @@ export default function Dashboard() {
         await designsApi.delete(id)
         setDesigns(designs.filter(d => d._id !== id))
       }
-    } catch { toast('Delete failed — try again', 'error') } finally {
+    } catch { toast(t('dashboard.deleteFailed'), 'error') } finally {
       setDeleting(null)
     }
   }
@@ -157,21 +159,21 @@ export default function Dashboard() {
               </span>
               <div className="flex items-center gap-2">
                 <Link to="/gallery" className="btn-secondary text-sm py-1.5 px-3 flex items-center gap-1.5">
-                  <Globe size={14} weight="regular" /> Gallery
+                  <Globe size={14} weight="regular" /> {t('dashboard.gallery')}
                 </Link>
                 <button onClick={() => setShowGenerate(true)} className="btn-secondary text-sm py-1.5 px-3 flex items-center gap-1.5">
-                  <MagicWand size={14} weight="regular" /> Generate
+                  <MagicWand size={14} weight="regular" /> {t('dashboard.generate')}
                 </button>
                 <button onClick={() => setShowCreateRoom(true)} className="btn-primary text-sm py-1.5 flex items-center gap-1.5 active:scale-[0.98]">
-                  <Plus size={15} weight="bold" /> New room
+                  <Plus size={15} weight="bold" /> {t('dashboard.newRoom')}
                 </button>
               </div>
             </div>
 
             {/* Headline + inline stats */}
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 pt-6">
-              <h1 className="text-[2.5rem] md:text-[3.25rem] font-bold text-brand-dark tracking-tighter leading-[0.92]">
-                Welcome back,{' '}
+              <h1 className="text-[2rem] sm:text-[2.5rem] md:text-[3.25rem] font-bold text-brand-dark tracking-tighter leading-[0.92]">
+                {t('dashboard.welcomeBack')}{' '}
                 <span className="text-brand-brown">{user?.name?.split(' ')[0]}</span>
               </h1>
 
@@ -179,17 +181,17 @@ export default function Dashboard() {
               <div className="flex items-center gap-5 pb-0.5 shrink-0">
                 <div>
                   <div className="text-[1.75rem] font-bold text-brand-dark font-mono tabular-nums leading-none">{rooms.length}</div>
-                  <div className="text-[10px] uppercase tracking-[0.12em] text-brand-grey-dark font-semibold mt-0.5">Rooms</div>
+                  <div className="text-[10px] uppercase tracking-[0.12em] text-brand-grey-dark font-semibold mt-0.5">{t('dashboard.rooms')}</div>
                 </div>
                 <div className="w-px h-9 bg-brand-grey" />
                 <div>
                   <div className="text-[1.75rem] font-bold text-brand-dark font-mono tabular-nums leading-none">{designs.length}</div>
-                  <div className="text-[10px] uppercase tracking-[0.12em] text-brand-grey-dark font-semibold mt-0.5">Designs</div>
+                  <div className="text-[10px] uppercase tracking-[0.12em] text-brand-grey-dark font-semibold mt-0.5">{t('dashboard.designs')}</div>
                 </div>
                 <div className="w-px h-9 bg-brand-grey" />
                 <div>
-                  <div className="text-base font-bold text-brand-dark capitalize leading-none">{user?.preferences?.style || 'Modern'}</div>
-                  <div className="text-[10px] uppercase tracking-[0.12em] text-brand-grey-dark font-semibold mt-0.5">Style</div>
+                  <div className="text-base font-bold text-brand-dark leading-none">{t(`dashboard.styles.${user?.preferences?.style || 'modern'}`)}</div>
+                  <div className="text-[10px] uppercase tracking-[0.12em] text-brand-grey-dark font-semibold mt-0.5">{t('dashboard.style')}</div>
                 </div>
               </div>
             </div>
@@ -197,13 +199,13 @@ export default function Dashboard() {
 
           {/* Tabs */}
           <div className="flex gap-2 mb-6">
-            {(['rooms', 'designs'] as const).map(t => (
-              <button key={t} onClick={() => setActiveTab(t)}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ease-spring duration-150 flex items-center gap-1.5 capitalize ${
-                  activeTab === t ? 'bg-brand-brown text-white' : 'bg-surface-raised text-brand-grey-dark hover:bg-brand-grey'
+            {(['rooms', 'designs'] as const).map(tab => (
+              <button key={tab} onClick={() => setActiveTab(tab)}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ease-spring duration-150 flex items-center gap-1.5 ${
+                  activeTab === tab ? 'bg-brand-brown text-white' : 'bg-surface-raised text-brand-grey-dark hover:bg-brand-grey'
                 }`}>
-                {t === 'rooms' ? <House size={14} weight="regular" /> : <GridFour size={14} weight="regular" />}
-                {t} ({t === 'rooms' ? rooms.length : designs.length})
+                {tab === 'rooms' ? <House size={14} weight="regular" /> : <GridFour size={14} weight="regular" />}
+                {t(`dashboard.${tab}`)} ({tab === 'rooms' ? rooms.length : designs.length})
               </button>
             ))}
           </div>
@@ -231,9 +233,9 @@ export default function Dashboard() {
                 <div className="w-16 h-16 bg-brand-brown/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <House size={32} weight="regular" className="text-brand-brown" />
                 </div>
-                <h3 className="text-lg font-semibold text-brand-dark mb-2">No rooms yet</h3>
-                <p className="text-brand-grey-dark mb-6">Create your first room to start designing</p>
-                <button onClick={() => setShowCreateRoom(true)} className="btn-primary">Create room</button>
+                <h3 className="text-lg font-semibold text-brand-dark mb-2">{t('dashboard.noRoomsTitle')}</h3>
+                <p className="text-brand-grey-dark mb-6">{t('dashboard.noRoomsDesc')}</p>
+                <button onClick={() => setShowCreateRoom(true)} className="btn-primary">{t('dashboard.createRoom')}</button>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -244,15 +246,15 @@ export default function Dashboard() {
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors rounded-xl" />
                     </div>
                     <h3 className="font-semibold text-brand-dark mb-1 truncate">{room.name}</h3>
-                    <p className="text-xs text-brand-grey-dark mb-1 capitalize">
-                      {room.roomType} · {room.stylePreference}
+                    <p className="text-xs text-brand-grey-dark mb-1">
+                      {t(`dashboard.roomTypes.${room.roomType}`)} · {t(`dashboard.styles.${room.stylePreference}`)}
                     </p>
                     <p className="text-xs text-brand-grey-dark font-mono mb-4">
                       {room.dimensions.width}m × {room.dimensions.depth}m × {room.dimensions.height}m
                     </p>
                     <div className="flex gap-2">
                       <button onClick={() => handleOpenRoom(room)} className="btn-primary text-xs py-1.5 flex-1">
-                        Open designer
+                        {t('dashboard.openDesigner')}
                       </button>
                       <button
                         onClick={() => confirmDelete(room._id, 'room', room.name)}
@@ -275,8 +277,8 @@ export default function Dashboard() {
                 <div className="w-16 h-16 bg-brand-brown/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <FolderSimple size={32} weight="regular" className="text-brand-brown" />
                 </div>
-                <h3 className="text-lg font-semibold text-brand-dark mb-2">No saved designs</h3>
-                <p className="text-brand-grey-dark">Open a room and save your design</p>
+                <h3 className="text-lg font-semibold text-brand-dark mb-2">{t('dashboard.noDesignsTitle')}</h3>
+                <p className="text-brand-grey-dark">{t('dashboard.noDesignsDesc')}</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -295,14 +297,14 @@ export default function Dashboard() {
                         }
                         {design.isShared && (
                           <span className="absolute top-2 right-2 bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full font-medium">
-                            Shared
+                            {t('dashboard.shared')}
                           </span>
                         )}
                       </div>
                       <h3 className="font-semibold text-brand-dark mb-1 truncate">{design.name}</h3>
                       {room && <p className="text-xs text-brand-grey-dark mb-1">{room.name}</p>}
                       <p className="text-xs text-brand-grey-dark mb-1">
-                        {design.furnitureLayout?.length || 0} items
+                        {design.furnitureLayout?.length || 0} {t('dashboard.itemsCount')}
                         {design.totalCost > 0 && <span className="font-mono"> · ${design.totalCost.toLocaleString()}</span>}
                       </p>
                       <p className="text-xs text-brand-grey-dark font-mono mb-4">
@@ -310,11 +312,11 @@ export default function Dashboard() {
                       </p>
                       <div className="flex gap-2">
                         <button onClick={() => handleOpenDesign(design)} className="btn-primary text-xs py-1.5 flex-1">
-                          Load design
+                          {t('dashboard.loadDesign')}
                         </button>
                         <Link
                           to={`/compare?a=${design._id}`}
-                          title="Compare with another design"
+                          title={t('dashboard.compareTitle')}
                           className="btn-secondary text-xs py-1.5 px-3 flex items-center justify-center"
                         >
                           <Columns size={13} weight="regular" />
@@ -363,14 +365,14 @@ export default function Dashboard() {
                       }`} />
                     ))}
                     <span className="text-[10px] font-semibold text-brand-grey-dark uppercase tracking-[0.12em] ml-1">
-                      {wizardStep} of 3
+                      {wizardStep} {t('dashboard.of')} 3
                     </span>
                   </div>
                   <h2 className="text-2xl font-bold text-brand-dark tracking-tighter leading-tight">
-                    {wizardStep === 1 ? 'Name your room' : wizardStep === 2 ? 'Set dimensions' : 'Style & budget'}
+                    {wizardStep === 1 ? t('dashboard.nameYourRoom') : wizardStep === 2 ? t('dashboard.setDimensions') : t('dashboard.styleBudget')}
                   </h2>
                   <p className="text-sm text-brand-grey-dark mt-0.5">
-                    {wizardStep === 1 ? 'Choose a name and type to start' : wizardStep === 2 ? 'Enter your room measurements' : 'Pick your aesthetic and budget'}
+                    {wizardStep === 1 ? t('dashboard.step1Sub') : wizardStep === 2 ? t('dashboard.step2Sub') : t('dashboard.step3Sub')}
                   </p>
                 </div>
                 <button onClick={closeWizard} className="w-8 h-8 flex items-center justify-center rounded-lg text-brand-grey-dark hover:bg-brand-grey transition-colors ease-spring duration-150 mt-0.5 shrink-0">
@@ -387,22 +389,22 @@ export default function Dashboard() {
               {wizardStep === 1 && (
                 <div className="space-y-4">
                   <div>
-                    <label className="label">Room name</label>
-                    <input className="input" placeholder="e.g. Living room" autoFocus
+                    <label className="label">{t('dashboard.roomName')}</label>
+                    <input className="input" placeholder={t('dashboard.roomNamePlaceholder')} autoFocus
                       value={newRoom.name} onChange={e => setNewRoom(r => ({ ...r, name: e.target.value }))} />
                   </div>
                   <div>
-                    <label className="label">Room type</label>
+                    <label className="label">{t('dashboard.roomType')}</label>
                     <div className="grid grid-cols-3 gap-2">
-                      {['living', 'bedroom', 'dining', 'office', 'kitchen', 'bathroom'].map(t => (
-                        <button key={t} type="button"
-                          onClick={() => setNewRoom(r => ({ ...r, roomType: t }))}
-                          className={`py-2 px-3 rounded-xl text-sm font-medium transition-all ease-spring duration-150 border capitalize ${
-                            newRoom.roomType === t
+                      {['living', 'bedroom', 'dining', 'office', 'kitchen', 'bathroom'].map(rt => (
+                        <button key={rt} type="button"
+                          onClick={() => setNewRoom(r => ({ ...r, roomType: rt }))}
+                          className={`py-2 px-3 rounded-xl text-sm font-medium transition-all ease-spring duration-150 border ${
+                            newRoom.roomType === rt
                               ? 'bg-brand-brown text-white border-brand-brown'
                               : 'bg-surface-raised text-brand-dark border-brand-grey hover:border-brand-brown/50'
                           }`}>
-                          {t}
+                          {t(`dashboard.roomTypes.${rt}`)}
                         </button>
                       ))}
                     </div>
@@ -411,13 +413,13 @@ export default function Dashboard() {
                   {/* Quick templates */}
                   {templates.length > 0 && (
                     <div>
-                      <p className="text-xs font-semibold text-brand-grey-dark uppercase tracking-[0.1em] mb-2">Or start from a template</p>
+                      <p className="text-xs font-semibold text-brand-grey-dark uppercase tracking-[0.1em] mb-2">{t('dashboard.orTemplate')}</p>
                       <div className="grid grid-cols-2 gap-2">
-                        {templates.slice(0, 4).map(t => (
-                          <button key={t.id} type="button" onClick={() => applyTemplate(t)}
+                        {templates.slice(0, 4).map(tmpl => (
+                          <button key={tmpl.id} type="button" onClick={() => applyTemplate(tmpl)}
                             className="text-left p-3 rounded-xl border border-brand-grey bg-surface-raised hover:border-brand-brown/50 transition-all ease-spring duration-150">
-                            <div className="text-xs font-semibold text-brand-dark mb-0.5">{t.name}</div>
-                            <div className="text-[10px] text-brand-grey-dark capitalize">{t.stylePreference} · {t.roomType}</div>
+                            <div className="text-xs font-semibold text-brand-dark mb-0.5">{tmpl.name}</div>
+                            <div className="text-[10px] text-brand-grey-dark">{t(`dashboard.styles.${tmpl.stylePreference}`)} · {t(`dashboard.roomTypes.${tmpl.roomType}`)}</div>
                           </button>
                         ))}
                       </div>
@@ -425,13 +427,13 @@ export default function Dashboard() {
                   )}
 
                   <div className="flex gap-3 pt-2">
-                    <button onClick={closeWizard} className="btn-secondary flex-1">Cancel</button>
+                    <button onClick={closeWizard} className="btn-secondary flex-1">{t('common.cancel')}</button>
                     <button
                       disabled={!newRoom.name.trim()}
                       onClick={() => setWizardStep(2)}
                       className="btn-primary flex-1 flex items-center justify-center gap-2"
                     >
-                      Next <ArrowRight size={14} weight="bold" />
+                      {t('common.next')} <ArrowRight size={14} weight="bold" />
                     </button>
                   </div>
                 </div>
@@ -441,12 +443,12 @@ export default function Dashboard() {
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 mb-1">
                     <Ruler size={16} weight="regular" className="text-brand-brown" />
-                    <span className="text-sm text-brand-grey-dark">Dimensions in metres</span>
+                    <span className="text-sm text-brand-grey-dark">{t('dashboard.dimsInMeters')}</span>
                   </div>
                   <div className="grid grid-cols-3 gap-3">
                     {(['width', 'depth', 'height'] as const).map(dim => (
                       <div key={dim}>
-                        <label className="label capitalize">{dim}</label>
+                        <label className="label">{t(`dashboard.${dim}`)}</label>
                         <input type="number" className="input font-mono" step="0.1"
                           min={dim === 'height' ? 2 : 1} max={dim === 'height' ? 6 : 30}
                           value={newRoom[dim]}
@@ -455,12 +457,12 @@ export default function Dashboard() {
                     ))}
                   </div>
                   <p className="text-xs text-brand-grey-dark font-mono">
-                    Floor area: <span className="text-brand-dark font-semibold">{(newRoom.width * newRoom.depth).toFixed(1)} m²</span>
+                    {t('dashboard.floorArea')} <span className="text-brand-dark font-semibold">{(newRoom.width * newRoom.depth).toFixed(1)} m²</span>
                   </p>
                   <div className="flex gap-3 pt-2">
-                    <button onClick={() => setWizardStep(1)} className="btn-secondary flex-1">Back</button>
+                    <button onClick={() => setWizardStep(1)} className="btn-secondary flex-1">{t('common.back')}</button>
                     <button onClick={() => setWizardStep(3)} className="btn-primary flex-1 flex items-center justify-center gap-2">
-                      Next <ArrowRight size={14} weight="bold" />
+                      {t('common.next')} <ArrowRight size={14} weight="bold" />
                     </button>
                   </div>
                 </div>
@@ -471,18 +473,18 @@ export default function Dashboard() {
                   <div>
                     <div className="flex items-center gap-2 mb-3">
                       <Palette size={16} weight="regular" className="text-brand-brown" />
-                      <label className="label mb-0">Style preference</label>
+                      <label className="label mb-0">{t('dashboard.stylePreference')}</label>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
                       {['minimalist', 'modern', 'cozy', 'luxury', 'industrial', 'scandinavian'].map(s => (
                         <button key={s} type="button"
                           onClick={() => setNewRoom(r => ({ ...r, stylePreference: s }))}
-                          className={`py-2 px-3 rounded-xl text-sm font-medium transition-all ease-spring duration-150 border capitalize ${
+                          className={`py-2 px-3 rounded-xl text-sm font-medium transition-all ease-spring duration-150 border ${
                             newRoom.stylePreference === s
                               ? 'bg-brand-brown text-white border-brand-brown'
                               : 'bg-surface-raised text-brand-dark border-brand-grey hover:border-brand-brown/50'
                           }`}>
-                          {s}
+                          {t(`dashboard.styles.${s}`)}
                         </button>
                       ))}
                     </div>
@@ -490,14 +492,10 @@ export default function Dashboard() {
                   <div>
                     <div className="flex items-center gap-2 mb-3">
                       <Wallet size={16} weight="regular" className="text-brand-brown" />
-                      <label className="label mb-0">Budget per item</label>
+                      <label className="label mb-0">{t('dashboard.budgetPerItem')}</label>
                     </div>
                     <div className="flex flex-col gap-2">
-                      {[
-                        { value: 'budget', label: 'Budget', sub: 'Under $300' },
-                        { value: 'mid-range', label: 'Mid-range', sub: '$300–$800' },
-                        { value: 'premium', label: 'Premium', sub: '$800+' },
-                      ].map(({ value, label, sub }) => (
+                      {(['budget', 'mid-range', 'premium'] as const).map(value => (
                         <button key={value} type="button"
                           onClick={() => setNewRoom(r => ({ ...r, budget: value }))}
                           className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all ease-spring duration-150 border text-left ${
@@ -505,23 +503,23 @@ export default function Dashboard() {
                               ? 'bg-brand-brown/10 border-brand-brown text-brand-dark'
                               : 'bg-surface-raised border-brand-grey hover:border-brand-brown/50 text-brand-dark'
                           }`}>
-                          <span>{label}</span>
-                          <span className="text-xs text-brand-grey-dark font-mono">{sub}</span>
+                          <span>{t(`dashboard.budgets.${value}`)}</span>
+                          <span className="text-xs text-brand-grey-dark font-mono">{t(`dashboard.budgetSub.${value}`)}</span>
                         </button>
                       ))}
                     </div>
                   </div>
                   <div className="flex gap-3 pt-2">
-                    <button onClick={() => setWizardStep(2)} className="btn-secondary flex-1">Back</button>
+                    <button onClick={() => setWizardStep(2)} className="btn-secondary flex-1">{t('common.back')}</button>
                     <button
                       onClick={handleCreateRoom}
                       disabled={creating}
                       className="btn-primary flex-1 flex items-center justify-center gap-2"
                     >
                       {creating ? (
-                        <><span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Creating...</>
+                        <><span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> {t('dashboard.creating')}</>
                       ) : (
-                        <>Create & open</>
+                        <>{t('dashboard.createOpen')}</>
                       )}
                     </button>
                   </div>
@@ -542,33 +540,33 @@ export default function Dashboard() {
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <p className="text-[10px] font-semibold text-brand-brown uppercase tracking-[0.12em] mb-0.5">AI</p>
-                  <h2 className="text-xl font-bold text-brand-dark tracking-tight">Generate from text</h2>
+                  <h2 className="text-xl font-bold text-brand-dark tracking-tight">{t('dashboard.generateFromText')}</h2>
                 </div>
                 <button onClick={() => setShowGenerate(false)} className="w-8 h-8 flex items-center justify-center rounded-lg text-brand-grey-dark hover:bg-brand-grey transition-colors ease-spring duration-150">
                   <X size={16} weight="regular" />
                 </button>
               </div>
-              <p className="text-sm text-brand-grey-dark mb-4">Describe your ideal room and we'll set it up automatically.</p>
+              <p className="text-sm text-brand-grey-dark mb-4">{t('dashboard.generateDesc')}</p>
               <textarea
                 className="input resize-none mb-1"
                 rows={4}
-                placeholder="e.g. A cozy 4x5 meter living room with warm walls, hardwood floors, and a modern Scandinavian style on a mid-range budget"
+                placeholder={t('dashboard.generatePlaceholder')}
                 value={generateText}
                 onChange={e => setGenerateText(e.target.value)}
                 autoFocus
               />
-              <p className="text-[11px] text-brand-grey-dark mb-4">Mention: room type, size, style, budget, colors</p>
+              <p className="text-[11px] text-brand-grey-dark mb-4">{t('dashboard.generateHint')}</p>
               <div className="flex gap-3">
-                <button onClick={() => setShowGenerate(false)} className="btn-secondary flex-1">Cancel</button>
+                <button onClick={() => setShowGenerate(false)} className="btn-secondary flex-1">{t('common.cancel')}</button>
                 <button
                   onClick={handleGenerate}
                   disabled={generating || !generateText.trim()}
                   className="btn-primary flex-1 flex items-center justify-center gap-2"
                 >
                   {generating ? (
-                    <><span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Generating...</>
+                    <><span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> {t('dashboard.generating')}</>
                   ) : (
-                    <><MagicWand size={14} weight="regular" /> Generate room</>
+                    <><MagicWand size={14} weight="regular" /> {t('dashboard.generateRoom')}</>
                   )}
                 </button>
               </div>
@@ -583,15 +581,17 @@ export default function Dashboard() {
           onClick={() => setDeleteConfirm(null)}>
           <div className="bg-surface-raised rounded-2xl shadow-2xl w-full max-w-sm p-6 animate-slide-up"
             onClick={e => e.stopPropagation()}>
-            <h3 className="text-base font-semibold text-brand-dark mb-2">Delete {deleteConfirm.type}?</h3>
+            <h3 className="text-base font-semibold text-brand-dark mb-2">
+              {t('dashboard.deleteTitle', { type: deleteConfirm.type === 'room' ? t('dashboard.roomWord') : t('dashboard.designWord') })}
+            </h3>
             <p className="text-sm text-brand-grey-dark mb-6">
-              "{deleteConfirm.name}" will be permanently removed.
-              {deleteConfirm.type === 'room' && ' All designs in this room will also be deleted.'}
+              {t('dashboard.deleteDesc', { name: deleteConfirm.name })}
+              {deleteConfirm.type === 'room' && t('dashboard.deleteRoomExtra')}
             </p>
             <div className="flex gap-3">
-              <button onClick={() => setDeleteConfirm(null)} className="btn-secondary flex-1">Cancel</button>
+              <button onClick={() => setDeleteConfirm(null)} className="btn-secondary flex-1">{t('common.cancel')}</button>
               <button onClick={executeDelete} className="flex-1 bg-red-500 text-white px-5 py-2.5 rounded-xl font-medium hover:bg-red-600 active:scale-[0.98] transition-all ease-spring duration-200">
-                Delete
+                {t('common.delete')}
               </button>
             </div>
           </div>

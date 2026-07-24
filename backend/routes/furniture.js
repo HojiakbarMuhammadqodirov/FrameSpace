@@ -1,32 +1,60 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const Furniture = require('../models/Furniture');
-const auth = require('../middleware/auth');
+const { getFallbackCatalog } = require('../data/furnitureCatalog');
 
 const router = express.Router();
 
-router.get('/', async (req, res) => {
-  try {
-    const { category, style, budget, search, limit = 50, page = 1 } = req.query;
-    const query = { inStock: true };
+// True when Mongo is not currently connected — the catalog then falls back to
+// the bundled list so it stays browsable with the database offline.
+const dbOffline = () => mongoose.connection.readyState !== 1;
 
+// In-memory equivalent of the Mongo query, used only in offline mode.
+function filterFallback({ category, style, budget, search }) {
+  return getFallbackCatalog()
+    .filter(i => i.inStock)
+    .filter(i => !category || i.category === category)
+    .filter(i => !style || (i.styleTags || []).includes(style))
+    .filter(i => !budget || i.priceRange === budget)
+    .filter(i => !search || i.name.toLowerCase().includes(String(search).toLowerCase()))
+    .sort((a, b) => b.rating - a.rating);
+}
+
+router.get('/', async (req, res) => {
+  const { category, style, budget, search, limit = 50, page = 1 } = req.query;
+  const lim = parseInt(limit);
+  const pg = parseInt(page);
+
+  if (dbOffline()) {
+    const all = filterFallback({ category, style, budget, search });
+    const skip = (pg - 1) * lim;
+    const items = all.slice(skip, skip + lim);
+    return res.json({ items, total: all.length, page: pg, pages: Math.ceil(all.length / lim), offline: true });
+  }
+
+  try {
+    const query = { inStock: true };
     if (category) query.category = category;
     if (style) query.styleTags = { $in: [style] };
     if (budget) query.priceRange = budget;
     if (search) query.name = { $regex: search, $options: 'i' };
 
-    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const skip = (pg - 1) * lim;
     const [items, total] = await Promise.all([
-      Furniture.find(query).skip(skip).limit(parseInt(limit)).sort({ rating: -1 }),
+      Furniture.find(query).skip(skip).limit(lim).sort({ rating: -1 }),
       Furniture.countDocuments(query),
     ]);
 
-    res.json({ items, total, page: parseInt(page), pages: Math.ceil(total / parseInt(limit)) });
+    res.json({ items, total, page: pg, pages: Math.ceil(total / lim), offline: false });
   } catch {
     res.status(500).json({ message: 'Server error' });
   }
 });
 
 router.get('/categories', async (req, res) => {
+  if (dbOffline()) {
+    return res.json([...new Set(getFallbackCatalog().map(i => i.category))]);
+  }
   try {
     const categories = await Furniture.distinct('category');
     res.json(categories);
@@ -36,6 +64,11 @@ router.get('/categories', async (req, res) => {
 });
 
 router.get('/:id', async (req, res) => {
+  if (dbOffline()) {
+    const item = getFallbackCatalog().find(i => i._id === req.params.id);
+    if (!item) return res.status(404).json({ message: 'Furniture not found' });
+    return res.json({ ...item, offline: true });
+  }
   try {
     const item = await Furniture.findById(req.params.id);
     if (!item) return res.status(404).json({ message: 'Furniture not found' });
@@ -47,6 +80,16 @@ router.get('/:id', async (req, res) => {
 
 // Rule-based recommendation engine
 router.post('/recommend', async (req, res) => {
+  // Offline: recommendations need the designer (which is disabled without a DB),
+  // but still return the top-rated fallback pieces so the UI has something to show.
+  if (dbOffline()) {
+    const items = getFallbackCatalog()
+      .sort((a, b) => b.rating - a.rating)
+      .slice(0, 12)
+      .map(i => ({ ...i, score: 0, reason: 'Popular pick from the catalog' }));
+    return res.json(items);
+  }
+
   try {
     const { room, preferences } = req.body;
     const { dimensions, windows = [], stylePreference, budget, roomType } = room;

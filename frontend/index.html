@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="FrameSpace — Design your perfect room in 3D with AI-powered furniture recommendations" />
     <title>FrameSpace — 3D Room Designer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
     <!-- Block-rendering theme init: prevents flash of unstyled content on dark mode -->
     <script>
       (function(){
@@ -12,6 +15,9 @@
         if(t==='dark'||(t===null&&window.matchMedia('(prefers-color-scheme: dark)').matches)){
           document.documentElement.classList.add('dark');
         }
+        // Default language is Uzbek; reflect the stored/default choice before render.
+        var l=localStorage.getItem('fs-lang');
+        document.documentElement.lang=(l==='uz'||l==='en')?l:'uz';
       })();
     </script>
   </head>

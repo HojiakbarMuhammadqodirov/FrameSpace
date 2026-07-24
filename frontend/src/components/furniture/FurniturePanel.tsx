@@ -5,24 +5,10 @@ import {
 } from '@phosphor-icons/react'
 import useStore from '../../store/useStore'
 import { furnitureApi } from '../../services/api'
+import { useLang } from '../../i18n/LanguageProvider'
 import type { FurnitureItem } from '../../types'
 
-const CATEGORIES = [
-  { id: '', label: 'All' },
-  { id: 'sofa', label: 'Sofas' },
-  { id: 'chair', label: 'Chairs' },
-  { id: 'table', label: 'Tables' },
-  { id: 'desk', label: 'Desks' },
-  { id: 'bed', label: 'Beds' },
-  { id: 'tv-stand', label: 'TV Stands' },
-  { id: 'shelf', label: 'Shelves' },
-  { id: 'wardrobe', label: 'Wardrobes' },
-  { id: 'storage', label: 'Storage' },
-  { id: 'lighting', label: 'Lighting' },
-  { id: 'rug', label: 'Rugs' },
-  { id: 'plant', label: 'Plants' },
-  { id: 'decor', label: 'Décor' },
-]
+const CATEGORY_IDS = ['', 'sofa', 'chair', 'table', 'desk', 'bed', 'tv-stand', 'shelf', 'wardrobe', 'storage', 'lighting', 'rug', 'plant', 'decor']
 
 function CategoryIcon({ category, size = 18 }: { category: string; size?: number }) {
   const w = 'regular' as const
@@ -44,6 +30,7 @@ function CategoryIcon({ category, size = 18 }: { category: string; size?: number
 
 export default function FurniturePanel() {
   const { catalog, setCatalog, furnitureCategory, setFurnitureCategory, addFurniture, currentRoom } = useStore()
+  const { t } = useLang()
   const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState('')
 
@@ -81,17 +68,17 @@ export default function FurniturePanel() {
   return (
     <div className="flex flex-col h-full">
       <div className="p-3 border-b border-brand-grey space-y-2 flex-shrink-0">
-        <input className="input text-sm" placeholder="Search furniture..."
+        <input className="input text-sm" placeholder={t('panels.searchFurniture')}
           value={search} onChange={e => setSearch(e.target.value)} />
         <div className="flex gap-1 flex-wrap">
-          {CATEGORIES.map(c => (
-            <button key={c.id} onClick={() => setFurnitureCategory(c.id)}
+          {CATEGORY_IDS.map(id => (
+            <button key={id} onClick={() => setFurnitureCategory(id)}
               className={`px-2 py-1 rounded-lg text-xs font-medium transition-all ease-spring duration-150 ${
-                furnitureCategory === c.id
+                furnitureCategory === id
                   ? 'bg-brand-brown text-white'
                   : 'bg-brand-grey text-brand-grey-dark hover:bg-brand-brown/10 hover:text-brand-brown'
               }`}>
-              {c.label}
+              {t(`panels.categories.${id || 'all'}`)}
             </button>
           ))}
         </div>
@@ -112,7 +99,7 @@ export default function FurniturePanel() {
             ))}
           </div>
         ) : catalog.length === 0 ? (
-          <div className="text-center py-8 text-brand-grey-dark text-sm">No items found</div>
+          <div className="text-center py-8 text-brand-grey-dark text-sm">{t('panels.noItems')}</div>
         ) : (
           <div className="space-y-2">
             {catalog.map(item => (

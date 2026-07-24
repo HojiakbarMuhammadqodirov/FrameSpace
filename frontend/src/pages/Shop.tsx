@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import {
-  House, ArrowLeft, MagnifyingGlass, Cube, Image, X, Funnel,
-} from '@phosphor-icons/react'
+import { MagnifyingGlass, Cube, Image, Funnel, CloudSlash } from '@phosphor-icons/react'
 import { furnitureApi } from '../services/api'
 import FurnitureMiniPreview from '../components/furniture/FurnitureMiniPreview'
+import MarketingNav from '../components/common/MarketingNav'
+import MarketingFooter from '../components/common/MarketingFooter'
+import { fallbackCatalog } from '../data/fallbackCatalog'
+import { useLang } from '../i18n/LanguageProvider'
 import type { FurnitureItem } from '../types'
 
 // Color name → hex map
@@ -29,21 +31,16 @@ function resolveColor(name: string): string {
   return colorHex[key] ?? '#A0896A'
 }
 
-const CATEGORIES = [
-  { id: '', label: 'All' },
-  { id: 'sofa', label: 'Sofas' },
-  { id: 'chair', label: 'Chairs' },
-  { id: 'table', label: 'Tables' },
-  { id: 'desk', label: 'Desks' },
-  { id: 'bed', label: 'Beds' },
-  { id: 'tv-stand', label: 'TV Stands' },
-  { id: 'shelf', label: 'Shelves' },
-  { id: 'wardrobe', label: 'Wardrobes' },
-  { id: 'storage', label: 'Storage' },
-  { id: 'lighting', label: 'Lighting' },
-  { id: 'rug', label: 'Rugs' },
-  { id: 'plant', label: 'Plants' },
-  { id: 'decor', label: 'Décor' },
+// Robustly build an image src whether `image` is a full URL or a bare Unsplash id.
+function resolveImg(image?: string): string | null {
+  if (!image) return null
+  if (image.startsWith('http')) return image
+  return `https://images.unsplash.com/photo-${image}?w=480&h=360&fit=crop&crop=center&auto=format&q=75`
+}
+
+const CATEGORY_IDS = [
+  '', 'sofa', 'chair', 'table', 'desk', 'bed', 'tv-stand', 'shelf',
+  'wardrobe', 'storage', 'lighting', 'rug', 'plant', 'decor',
 ]
 
 interface CardState {
@@ -52,8 +49,10 @@ interface CardState {
 }
 
 export default function Shop() {
+  const { t } = useLang()
   const [items, setItems] = useState<FurnitureItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [offline, setOffline] = useState(false)
   const [category, setCategory] = useState('')
   const [search, setSearch] = useState('')
   const [cardState, setCardState] = useState<Record<string, CardState>>({})
@@ -70,10 +69,21 @@ export default function Shop() {
           limit: 100,
         })
         setItems(res.data.items)
-      } catch { /* ignore */ } finally { setLoading(false) }
+        setOffline(!!res.data.offline)
+      } catch {
+        // Backend fully unreachable — fall back to the bundled catalog.
+        const filtered = fallbackCatalog.filter(i =>
+          (!category || i.category === category) &&
+          (!search || i.name.toLowerCase().includes(search.toLowerCase()))
+        )
+        setItems(filtered)
+        setOffline(true)
+      } finally {
+        setLoading(false)
+      }
     }
-    const t = setTimeout(load, 250)
-    return () => { clearTimeout(t); controller.abort() }
+    const timer = setTimeout(load, 250)
+    return () => { clearTimeout(timer); controller.abort() }
   }, [category, search])
 
   function getCard(id: string, item: FurnitureItem): CardState {
@@ -86,31 +96,37 @@ export default function Shop() {
 
   return (
     <div className="min-h-[100dvh] bg-brand-grey-light flex flex-col">
-      {/* Navbar */}
-      <header className="sticky top-0 z-40 flex justify-between items-center px-6 md:px-10 py-4 bg-surface-raised/90 backdrop-blur-2xl border-b border-brand-grey">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-brand-brown rounded-lg flex items-center justify-center">
-            <House size={15} weight="fill" className="text-white" />
-          </div>
-          <span className="font-bold text-brand-dark text-base tracking-tight">FrameSpace</span>
-        </Link>
-        <Link to="/" className="flex items-center gap-1.5 text-xs text-brand-grey-dark hover:text-brand-dark transition-colors">
-          <ArrowLeft size={12} weight="bold" /> Back home
-        </Link>
-      </header>
+      <MarketingNav />
 
-      <main className="flex-1 px-6 md:px-10 py-8 max-w-7xl mx-auto w-full">
+      <main id="main-content" className="flex-1 px-5 sm:px-6 md:px-10 pt-28 sm:pt-32 pb-16 max-w-7xl mx-auto w-full">
         {/* Title + search */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-brand-dark tracking-tighter mb-1">Shop All Furniture</h1>
-          <p className="text-brand-grey-dark text-sm mb-5">{loading ? '–' : items.length} pieces available</p>
+          <p className="text-xs font-semibold text-brand-brown uppercase tracking-[0.2em] mb-4">{t('shop.eyebrow')}</p>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-brand-dark tracking-tighter mb-2">
+            {t('shop.title1')}{' '}
+            <em className="font-display font-normal italic text-brand-brown">{t('shop.titleEm')}</em>
+          </h1>
+          <p className="text-brand-grey-dark text-sm mb-6 font-mono tabular-nums">
+            {loading ? '—' : items.length} {t('shop.piecesAvailable')}
+          </p>
+
+          {/* Offline banner */}
+          {offline && !loading && (
+            <div className="mb-6 flex items-start gap-3 rounded-2xl border border-brand-brown/25 bg-brand-brown/[0.06] px-4 py-3">
+              <CloudSlash size={18} weight="regular" className="text-brand-brown flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-brand-dark">{t('shop.offlineBadge')}</p>
+                <p className="text-xs text-brand-grey-dark leading-relaxed mt-0.5">{t('shop.offlineNote')}</p>
+              </div>
+            </div>
+          )}
 
           <div className="flex gap-3 flex-wrap">
-            <div className="relative flex-1 min-w-[220px]">
+            <div className="relative flex-1 min-w-[200px]">
               <MagnifyingGlass size={15} weight="regular" className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-grey-dark" />
               <input
                 className="input pl-9 text-sm"
-                placeholder="Search furniture..."
+                placeholder={t('shop.searchPlaceholder')}
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />
@@ -122,7 +138,7 @@ export default function Shop() {
               }`}
             >
               <Funnel size={14} weight={showFilters ? 'fill' : 'regular'} />
-              Filters
+              {t('shop.filters')}
             </button>
           </div>
         </div>
@@ -130,17 +146,17 @@ export default function Shop() {
         {/* Category pills */}
         {showFilters && (
           <div className="mb-6 flex flex-wrap gap-2">
-            {CATEGORIES.map(c => (
+            {CATEGORY_IDS.map(id => (
               <button
-                key={c.id}
-                onClick={() => setCategory(c.id)}
+                key={id}
+                onClick={() => setCategory(id)}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ease-spring duration-150 ${
-                  category === c.id
+                  category === id
                     ? 'bg-brand-brown text-white'
                     : 'bg-brand-grey text-brand-grey-dark hover:bg-brand-brown/10 hover:text-brand-brown'
                 }`}
               >
-                {c.label}
+                {t(`shop.categories.${id || 'all'}`)}
               </button>
             ))}
           </div>
@@ -163,11 +179,14 @@ export default function Shop() {
         ) : items.length === 0 ? (
           <div className="text-center py-20 text-brand-grey-dark">
             <MagnifyingGlass size={36} weight="regular" className="mx-auto mb-3 opacity-40" />
-            <p className="text-sm">No furniture found. Try a different search or category.</p>
+            <p className="text-sm">{t('shop.noResults')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {items.map(item => {
+              if (offline) {
+                return <OfflineCard key={item._id} item={item} label={t('shop.company')} />
+              }
               const cs = getCard(item._id, item)
               const selectedHex = resolveColor(cs.selectedColor)
               return (
@@ -184,11 +203,46 @@ export default function Shop() {
           </div>
         )}
       </main>
+
+      <MarketingFooter />
     </div>
   )
 }
 
-// ── Furniture Card ──────────────────────────────────────────────────────────
+// ── Offline Card — photo + company + name + price only ──────────────────────
+function OfflineCard({ item, label }: { item: FurnitureItem; label: string }) {
+  const imgUrl = resolveImg(item.image)
+  const company = (item as any).company || item.source
+
+  return (
+    <div className="group rounded-2xl border border-brand-grey bg-surface-raised overflow-hidden hover:border-brand-brown hover:shadow-card-hover transition-all ease-spring duration-200 flex flex-col">
+      <div className="relative overflow-hidden bg-brand-grey" style={{ height: '200px' }}>
+        {imgUrl ? (
+          <img
+            src={imgUrl}
+            alt={item.name}
+            loading="lazy"
+            className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform ease-spring duration-500"
+            onError={e => { (e.target as HTMLImageElement).style.visibility = 'hidden' }}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-brand-grey-dark text-xs">{item.category}</div>
+        )}
+      </div>
+      <div className="p-4 flex flex-col flex-1">
+        {company && (
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-brown mb-1">{company}</p>
+        )}
+        <p className="text-sm font-semibold text-brand-dark leading-tight mb-2 line-clamp-2">{item.name}</p>
+        <span className="mt-auto text-base font-bold text-brand-brown font-mono tabular-nums">
+          ${item.price.toLocaleString()}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+// ── Furniture Card (online) ─────────────────────────────────────────────────
 interface CardProps {
   item: FurnitureItem
   cardState: CardState
@@ -198,10 +252,9 @@ interface CardProps {
 }
 
 function FurnitureCard({ item, cardState, selectedHex, onColorSelect, onToggle3D }: CardProps) {
+  const { t } = useLang()
   const { selectedColor, show3D } = cardState
-  const imgUrl = item.image
-    ? `https://images.unsplash.com/photo-${item.image}?w=480&h=360&fit=crop&crop=center&auto=format&q=75`
-    : null
+  const imgUrl = resolveImg(item.image)
 
   return (
     <div className="group rounded-2xl border border-brand-grey bg-surface-raised overflow-hidden hover:border-brand-brown hover:shadow-card-hover transition-all ease-spring duration-200 flex flex-col">
@@ -232,7 +285,7 @@ function FurnitureCard({ item, cardState, selectedHex, onColorSelect, onToggle3D
         <button
           onClick={onToggle3D}
           className="absolute top-2.5 right-2.5 w-7 h-7 rounded-lg bg-surface-raised/90 backdrop-blur flex items-center justify-center text-brand-grey-dark hover:text-brand-dark transition-colors shadow-sm"
-          title={show3D ? 'Show photo' : 'View in 3D'}
+          title={show3D ? t('shop.showPhoto') : t('shop.view3d')}
         >
           {show3D ? <Image size={13} weight="regular" /> : <Cube size={13} weight="regular" />}
         </button>
@@ -261,7 +314,7 @@ function FurnitureCard({ item, cardState, selectedHex, onColorSelect, onToggle3D
         {item.colors.length > 0 && (
           <div className="mb-3">
             <p className="text-[10px] text-brand-grey-dark mb-1.5 font-medium">
-              Color: <span className="text-brand-dark capitalize">{selectedColor}</span>
+              {t('shop.color')}: <span className="text-brand-dark capitalize">{selectedColor}</span>
             </p>
             <div className="flex flex-wrap gap-1.5">
               {item.colors.slice(0, 8).map(c => {
@@ -311,7 +364,7 @@ function FurnitureCard({ item, cardState, selectedHex, onColorSelect, onToggle3D
             to="/dashboard"
             className="btn-primary w-full text-xs py-2.5 text-center block"
           >
-            Add to room designer
+            {t('shop.addToDesigner')}
           </Link>
         </div>
       </div>

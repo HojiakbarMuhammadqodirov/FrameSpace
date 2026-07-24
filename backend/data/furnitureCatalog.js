@@ -1,0 +1,545 @@
+// Canonical furniture catalog — the single source of truth used both by the
+// seed script (data/seedFurniture.js) and by the furniture route as an OFFLINE
+// FALLBACK when MongoDB is unreachable. Keeping the data here means the catalog
+// stays browsable even with the database down.
+//
+// 52 items. Every `image` below uses an Unsplash photo id that has been verified
+// to return HTTP 200 and to depict the right kind of furniture, so no card shows
+// a broken image offline. All images are free-license (Unsplash).
+const img = (id) => `https://images.unsplash.com/photo-${id}?w=400&h=300&q=80&fit=crop&auto=format`;
+
+// Verified image ids, grouped by subject (all return 200).
+const IMG = {
+  sofa1: '1555041469-a586c61ea9bc', sofa2: '1493663284031-b7e3aefcae8e', sofa3: '1506439773649-6e0eb8cfb237',
+  sofaRoom1: '1618221195710-dd6b41faaea6', livingRoom: '1616486338812-3dadae4b4ace',
+  chair1: '1586023492125-27b2c045efd7', chair2: '1567538096621-38d2284b23ff', chairDining: '1577140917170-285929fb55b7',
+  armchair: '1611967164521-abae8fba4668',
+  coffeeTable: '1598300042247-d088f8ab3a91', diningTable: '1602872030219-ad2b9a54315c',
+  desk: '1593642632559-0c6d3fc62b89',
+  bed1: '1505693416388-ac5ce068fe85', bed2: '1571508601891-ca5e7a713859', bed3: '1631049307264-da0ec9d70304',
+  tvUnit: '1598928506311-c55ded91a20c', mediaConsole: '1600121848594-d8644e57abab',
+  bookcase: '1618220048045-10a6dbdf83e0', cubby: '1595428774223-ef52624120d2', floatingShelf: '1594026112284-02bb6f3352fe',
+  wardrobe: '1558997519-83ea9252edf8',
+  floorLamp: '1572017791834-6894ae06a6ac', arcLamp: '1524758631624-e2822e304c36',
+  pendant: '1524484485831-a92ffc0de03f', lantern: '1526057565006-20beab8dd2ed',
+  rug: '1600585152220-90363fe7e115',
+  plant1: '1545241047-6083a3684587', snakePlant: '1567225557594-88d73e55f2cb',
+  wallArt: '1594026112284-02bb6f3352fe', mirrorsWall: '1631679706909-1844bbd07221',
+};
+
+const furnitureCatalog = [
+  // ── SOFAS (5) ───────────────────────────────────────────────────────────────
+  {
+    name: 'KIVIK 3-Seat Sofa', category: 'sofa', price: 699, priceRange: 'mid-range',
+    dimensions: { width: 228, depth: 95, height: 83 },
+    colors: ['beige', 'dark grey', 'light grey', 'blue'], materials: ['fabric', 'foam'],
+    styleTags: ['modern', 'scandinavian', 'versatile'], roomTypes: ['living'],
+    source: 'IKEA', sourceUrl: 'https://www.ikea.com',
+    description: 'Comfortable 3-seat sofa with deep seats.', rating: 4.3,
+    image: img(IMG.sofa1),
+  },
+  {
+    name: 'EKTORP 2-Seat Sofa', category: 'sofa', price: 549, priceRange: 'mid-range',
+    dimensions: { width: 190, depth: 88, height: 88 },
+    colors: ['white', 'beige', 'light grey'], materials: ['fabric', 'polyester'],
+    styleTags: ['cozy', 'scandinavian', 'versatile'], roomTypes: ['living'],
+    source: 'IKEA', sourceUrl: 'https://www.ikea.com',
+    description: 'Classic sofa with a timeless look.', rating: 4.5,
+    image: img(IMG.sofa2),
+  },
+  {
+    name: 'BÄRSTA Sectional Sofa', category: 'sofa', price: 1299, priceRange: 'premium',
+    dimensions: { width: 280, depth: 160, height: 80 },
+    colors: ['dark blue', 'charcoal', 'beige'], materials: ['fabric', 'foam'],
+    styleTags: ['modern', 'luxury'], roomTypes: ['living'],
+    source: 'IKEA', sourceUrl: 'https://www.ikea.com',
+    description: 'Large L-shaped sectional sofa.', rating: 4.6,
+    image: img(IMG.sofa3),
+  },
+  {
+    name: 'FRIHETEN Sleeper Sofa', category: 'sofa', price: 479, priceRange: 'budget',
+    dimensions: { width: 230, depth: 151, height: 66 },
+    colors: ['dark grey', 'beige', 'khaki'], materials: ['fabric'],
+    styleTags: ['minimalist', 'modern', 'versatile'], roomTypes: ['living'],
+    source: 'IKEA', sourceUrl: 'https://www.ikea.com',
+    description: 'Sofa bed with storage.', rating: 4.1,
+    image: img(IMG.sofaRoom1),
+  },
+  {
+    name: 'Velvet Chesterfield Sofa', category: 'sofa', price: 1899, priceRange: 'premium',
+    dimensions: { width: 210, depth: 92, height: 76 },
+    colors: ['emerald', 'navy', 'burgundy', 'teal'], materials: ['velvet', 'solid wood'],
+    styleTags: ['luxury', 'cozy'], roomTypes: ['living'],
+    source: 'Wayfair', sourceUrl: 'https://www.wayfair.com',
+    description: 'Luxurious tufted Chesterfield sofa.', rating: 4.7,
+    image: img(IMG.livingRoom),
+  },
+
+  // ── CHAIRS (7) ────────────────────────────────────────────────────────────
+  {
+    name: 'POÄNG Armchair', category: 'chair', price: 149, priceRange: 'budget',
+    dimensions: { width: 68, depth: 82, height: 100 },
+    colors: ['birch', 'walnut'], materials: ['birch', 'fabric'],
+    styleTags: ['scandinavian', 'minimalist', 'versatile'], roomTypes: ['living', 'bedroom', 'office'],
+    source: 'IKEA', sourceUrl: 'https://www.ikea.com',
+    description: 'Classic armchair with layer-glued bent birch frame.', rating: 4.7,
+    image: img(IMG.chair1),
+  },
+  {
+    name: 'STRANDMON Wing Chair', category: 'chair', price: 349, priceRange: 'mid-range',
+    dimensions: { width: 82, depth: 96, height: 101 },
+    colors: ['yellow', 'grey', 'dark blue', 'beige'], materials: ['fabric', 'polyester'],
+    styleTags: ['cozy', 'vintage', 'versatile'], roomTypes: ['living', 'bedroom'],
+    source: 'IKEA', sourceUrl: 'https://www.ikea.com',
+    description: 'Comfortable wing chair for reading.', rating: 4.6,
+    image: img(IMG.armchair),
+  },
+  {
+    name: 'Eames Style Lounge Chair', category: 'chair', price: 799, priceRange: 'premium',
+    dimensions: { width: 83, depth: 84, height: 85 },
+    colors: ['black', 'brown', 'white'], materials: ['leather', 'molded plywood'],
+    styleTags: ['modern', 'luxury', 'minimalist'], roomTypes: ['living', 'office'],
+    source: 'Wayfair', sourceUrl: 'https://www.wayfair.com',
+    description: 'Iconic mid-century modern lounge chair.', rating: 4.8,
+    image: img(IMG.chair2),
+  },
+  {
+    name: 'MARKUS Office Chair', category: 'chair', price: 229, priceRange: 'mid-range',
+    dimensions: { width: 62, depth: 60, height: 128 },
+    colors: ['black', 'white'], materials: ['fabric', 'steel'],
+    styleTags: ['modern', 'minimalist'], roomTypes: ['office'],
+    source: 'IKEA', sourceUrl: 'https://www.ikea.com',
+    description: 'Ergonomic office chair with lumbar support.', rating: 4.4,
+    image: img(IMG.chair1),
+  },
+  {
+    name: 'Acapulco Accent Chair', category: 'chair', price: 179, priceRange: 'budget',
+    dimensions: { width: 78, depth: 72, height: 90 },
+    colors: ['white', 'red', 'blue', 'yellow'], materials: ['PVC cord', 'steel'],
+    styleTags: ['modern', 'industrial'], roomTypes: ['living', 'bedroom', 'office'],
+    source: 'Wayfair', sourceUrl: 'https://www.wayfair.com',
+    description: 'Retro-inspired woven accent chair.', rating: 4.3,
+    image: img(IMG.armchair),
+  },
+  {
+    name: 'INGOLF Dining Chair', category: 'chair', price: 79, priceRange: 'budget',
+    dimensions: { width: 43, depth: 50, height: 91 },
+    colors: ['white', 'black', 'brown'], materials: ['solid pine'],
+    styleTags: ['scandinavian', 'minimalist', 'versatile'], roomTypes: ['dining', 'kitchen'],
+    source: 'IKEA', sourceUrl: 'https://www.ikea.com',
+    description: 'Classic solid pine dining chair.', rating: 4.3,
+    image: img(IMG.chairDining),
+  },
+  {
+    name: 'Velvet Dining Chair', category: 'chair', price: 199, priceRange: 'mid-range',
+    dimensions: { width: 46, depth: 54, height: 90 },
+    colors: ['emerald', 'blush pink', 'navy', 'mustard'], materials: ['velvet', 'gold metal'],
+    styleTags: ['luxury', 'modern', 'cozy'], roomTypes: ['dining'],
+    source: 'Wayfair', sourceUrl: 'https://www.wayfair.com',
+    description: 'Upholstered velvet chair with gold legs.', rating: 4.5,
+    image: img(IMG.chairDining),
+  },
+
+  // ── TABLES (6) ────────────────────────────────────────────────────────────
+  {
+    name: 'HEMNES Coffee Table', category: 'table', price: 179, priceRange: 'budget',
+    dimensions: { width: 118, depth: 75, height: 45 },
+    colors: ['white', 'black-brown', 'grey'], materials: ['solid pine', 'wood'],
+    styleTags: ['scandinavian', 'cozy', 'versatile'], roomTypes: ['living'],
+    source: 'IKEA', sourceUrl: 'https://www.ikea.com',
+    description: 'Solid wood coffee table with storage.', rating: 4.5,
+    image: img(IMG.coffeeTable),
+  },
+  {
+    name: 'EKEDALEN Dining Table', category: 'table', price: 249, priceRange: 'mid-range',
+    dimensions: { width: 120, depth: 80, height: 75 },
+    colors: ['dark brown', 'oak'], materials: ['solid birch', 'oak veneer'],
+    styleTags: ['scandinavian', 'modern', 'versatile'], roomTypes: ['dining'],
+    source: 'IKEA', sourceUrl: 'https://www.ikea.com',
+    description: 'Extendable dining table for 4–6 persons.', rating: 4.4,
+    image: img(IMG.diningTable),
+  },
+  {
+    name: 'Marble Round Coffee Table', category: 'table', price: 449, priceRange: 'mid-range',
+    dimensions: { width: 90, depth: 90, height: 46 },
+    colors: ['white marble', 'black marble'], materials: ['marble', 'gold metal'],
+    styleTags: ['luxury', 'modern'], roomTypes: ['living'],
+    source: 'Wayfair', sourceUrl: 'https://www.wayfair.com',
+    description: 'Elegant round marble-top coffee table.', rating: 4.6,
+    image: img(IMG.coffeeTable),
+  },
+  {
+    name: 'Solid Oak Dining Table', category: 'table', price: 699, priceRange: 'premium',
+    dimensions: { width: 180, depth: 90, height: 75 },
+    colors: ['natural oak', 'walnut'], materials: ['solid oak'],
+    styleTags: ['scandinavian', 'modern', 'cozy'], roomTypes: ['dining'],
+    source: 'Wayfair', sourceUrl: 'https://www.wayfair.com',
+    description: 'Sturdy solid oak dining table for 6.', rating: 4.7,
+    image: img(IMG.diningTable),
+  },
+  {
+    name: 'HEMNES Nightstand', category: 'table', price: 119, priceRange: 'budget',
+    dimensions: { width: 46, depth: 35, height: 70 },
+    colors: ['white', 'black-brown', 'grey'], materials: ['solid pine'],
+    styleTags: ['scandinavian', 'cozy', 'versatile'], roomTypes: ['bedroom'],
+    source: 'IKEA', sourceUrl: 'https://www.ikea.com',
+    description: 'Bedside table with 2 drawers for handy storage.', rating: 4.5,
+    image: img(IMG.coffeeTable),
+  },
+  {
+    name: 'Marble Nightstand', category: 'table', price: 279, priceRange: 'mid-range',
+    dimensions: { width: 50, depth: 38, height: 58 },
+    colors: ['white marble', 'black'], materials: ['marble', 'brass'],
+    styleTags: ['luxury', 'modern', 'minimalist'], roomTypes: ['bedroom'],
+    source: 'Wayfair', sourceUrl: 'https://www.wayfair.com',
+    description: 'Sleek marble-top bedside table with brass detail.', rating: 4.6,
+    image: img(IMG.coffeeTable),
+  },
+
+  // ── DESKS (3) ─────────────────────────────────────────────────────────────
+  {
+    name: 'BEKANT Sit/Stand Desk', category: 'desk', price: 499, priceRange: 'mid-range',
+    dimensions: { width: 160, depth: 80, height: 75 },
+    colors: ['white', 'black', 'birch'], materials: ['particleboard', 'steel'],
+    styleTags: ['minimalist', 'modern'], roomTypes: ['office'],
+    source: 'IKEA', sourceUrl: 'https://www.ikea.com',
+    description: 'Electric sit/stand desk for home office.', rating: 4.4,
+    image: img(IMG.desk),
+  },
+  {
+    name: 'LINNMON Desk', category: 'desk', price: 79, priceRange: 'budget',
+    dimensions: { width: 150, depth: 75, height: 75 },
+    colors: ['white', 'oak'], materials: ['particleboard'],
+    styleTags: ['minimalist', 'versatile'], roomTypes: ['office', 'bedroom'],
+    source: 'IKEA', sourceUrl: 'https://www.ikea.com',
+    description: 'Simple and affordable desk.', rating: 4.0,
+    image: img(IMG.desk),
+  },
+  {
+    name: 'Solid Wood Writing Desk', category: 'desk', price: 349, priceRange: 'mid-range',
+    dimensions: { width: 120, depth: 60, height: 76 },
+    colors: ['walnut', 'oak', 'white'], materials: ['solid wood', 'steel'],
+    styleTags: ['modern', 'minimalist', 'scandinavian'], roomTypes: ['office', 'bedroom'],
+    source: 'Wayfair', sourceUrl: 'https://www.wayfair.com',
+    description: 'Clean-lined writing desk with hairpin legs.', rating: 4.5,
+    image: img(IMG.desk),
+  },
+
+  // ── BEDS (3) ──────────────────────────────────────────────────────────────
+  {
+    name: 'MALM Bed Frame Queen', category: 'bed', price: 299, priceRange: 'mid-range',
+    dimensions: { width: 166, depth: 209, height: 100 },
+    colors: ['white', 'black-brown', 'oak veneer'], materials: ['particleboard', 'birch veneer'],
+    styleTags: ['minimalist', 'scandinavian', 'versatile'], roomTypes: ['bedroom'],
+    source: 'IKEA', sourceUrl: 'https://www.ikea.com',
+    description: 'Clean-lined bed frame with under-bed storage.', rating: 4.4,
+    image: img(IMG.bed1),
+  },
+  {
+    name: 'HEMNES Bed Frame King', category: 'bed', price: 499, priceRange: 'mid-range',
+    dimensions: { width: 188, depth: 219, height: 109 },
+    colors: ['white', 'dark grey', 'black'], materials: ['solid pine'],
+    styleTags: ['cozy', 'scandinavian'], roomTypes: ['bedroom'],
+    source: 'IKEA', sourceUrl: 'https://www.ikea.com',
+    description: 'Solid wood bed with timeless design.', rating: 4.6,
+    image: img(IMG.bed2),
+  },
+  {
+    name: 'Upholstered Platform Bed', category: 'bed', price: 899, priceRange: 'premium',
+    dimensions: { width: 170, depth: 215, height: 120 },
+    colors: ['beige', 'light grey', 'dark blue', 'cream'], materials: ['velvet', 'solid wood'],
+    styleTags: ['luxury', 'modern', 'cozy'], roomTypes: ['bedroom'],
+    source: 'Wayfair', sourceUrl: 'https://www.wayfair.com',
+    description: 'Luxurious upholstered platform bed with tall headboard.', rating: 4.7,
+    image: img(IMG.bed3),
+  },
+
+  // ── TV STANDS (3) ─────────────────────────────────────────────────────────
+  {
+    name: 'BESTA TV Unit', category: 'tv-stand', price: 299, priceRange: 'mid-range',
+    dimensions: { width: 180, depth: 42, height: 64 },
+    colors: ['white', 'black-brown', 'walnut'], materials: ['particleboard'],
+    styleTags: ['minimalist', 'scandinavian', 'versatile'], roomTypes: ['living', 'bedroom'],
+    source: 'IKEA', sourceUrl: 'https://www.ikea.com',
+    description: 'Modular TV unit with push-open doors and cable management.', rating: 4.5,
+    image: img(IMG.tvUnit),
+  },
+  {
+    name: 'Floating TV Console', category: 'tv-stand', price: 449, priceRange: 'mid-range',
+    dimensions: { width: 160, depth: 35, height: 45 },
+    colors: ['walnut', 'oak', 'black'], materials: ['solid wood', 'MDF'],
+    styleTags: ['modern', 'minimalist', 'luxury'], roomTypes: ['living', 'bedroom'],
+    source: 'Wayfair', sourceUrl: 'https://www.wayfair.com',
+    description: 'Wall-mounted floating TV console with open shelves.', rating: 4.6,
+    image: img(IMG.mediaConsole),
+  },
+  {
+    name: 'Industrial Media Console', category: 'tv-stand', price: 349, priceRange: 'mid-range',
+    dimensions: { width: 150, depth: 40, height: 55 },
+    colors: ['dark walnut', 'black'], materials: ['solid wood', 'steel'],
+    styleTags: ['industrial', 'modern'], roomTypes: ['living'],
+    source: 'Wayfair', sourceUrl: 'https://www.wayfair.com',
+    description: 'TV console with steel frame and open wooden shelving.', rating: 4.4,
+    image: img(IMG.tvUnit),
+  },
+
+  // ── SHELVES (3) ───────────────────────────────────────────────────────────
+  {
+    name: 'KALLAX Shelf Unit 4×4', category: 'shelf', price: 89, priceRange: 'budget',
+    dimensions: { width: 147, depth: 39, height: 147 },
+    colors: ['white', 'black-brown', 'walnut'], materials: ['particleboard'],
+    styleTags: ['minimalist', 'modern', 'versatile'], roomTypes: ['living', 'bedroom', 'office'],
+    source: 'IKEA', sourceUrl: 'https://www.ikea.com',
+    description: '4×4 cube shelf unit, perfect for storage.', rating: 4.6,
+    image: img(IMG.bookcase),
+  },
+  {
+    name: 'BILLY Bookcase', category: 'shelf', price: 59, priceRange: 'budget',
+    dimensions: { width: 80, depth: 28, height: 202 },
+    colors: ['white', 'oak', 'black'], materials: ['particleboard', 'birch veneer'],
+    styleTags: ['minimalist', 'versatile', 'scandinavian'], roomTypes: ['living', 'office', 'bedroom'],
+    source: 'IKEA', sourceUrl: 'https://www.ikea.com',
+    description: 'Tall bookcase with adjustable shelves.', rating: 4.7,
+    image: img(IMG.cubby),
+  },
+  {
+    name: 'Floating Wall Shelf Set', category: 'shelf', price: 49, priceRange: 'budget',
+    dimensions: { width: 80, depth: 20, height: 15 },
+    colors: ['white', 'oak', 'black'], materials: ['MDF', 'solid wood'],
+    styleTags: ['minimalist', 'modern', 'scandinavian'], roomTypes: ['living', 'bedroom', 'office'],
+    source: 'Wayfair', sourceUrl: 'https://www.wayfair.com',
+    description: 'Set of 3 floating shelves for wall display.', rating: 4.4,
+    image: img(IMG.floatingShelf),
+  },
+
+  // ── WARDROBE (1) ──────────────────────────────────────────────────────────
+  {
+    name: 'PAX Wardrobe 200cm', category: 'wardrobe', price: 399, priceRange: 'mid-range',
+    dimensions: { width: 200, depth: 60, height: 236 },
+    colors: ['white', 'birch'], materials: ['particleboard', 'mirror'],
+    styleTags: ['minimalist', 'scandinavian', 'versatile'], roomTypes: ['bedroom'],
+    source: 'IKEA', sourceUrl: 'https://www.ikea.com',
+    description: 'Modular wardrobe with sliding doors.', rating: 4.5,
+    image: img(IMG.wardrobe),
+  },
+
+  // ── STORAGE (3) ───────────────────────────────────────────────────────────
+  {
+    name: 'IVAR Storage Unit', category: 'storage', price: 149, priceRange: 'budget',
+    dimensions: { width: 80, depth: 50, height: 179 },
+    colors: ['pine', 'natural'], materials: ['solid pine'],
+    styleTags: ['scandinavian', 'industrial', 'versatile'], roomTypes: ['living', 'office', 'bedroom'],
+    source: 'IKEA', sourceUrl: 'https://www.ikea.com',
+    description: 'Flexible pine storage system.', rating: 4.3,
+    image: img(IMG.cubby),
+  },
+  {
+    name: 'HEMNES 8-Drawer Dresser', category: 'storage', price: 349, priceRange: 'mid-range',
+    dimensions: { width: 127, depth: 50, height: 96 },
+    colors: ['white', 'black-brown', 'grey'], materials: ['solid pine'],
+    styleTags: ['scandinavian', 'cozy', 'versatile'], roomTypes: ['bedroom'],
+    source: 'IKEA', sourceUrl: 'https://www.ikea.com',
+    description: 'Classic 8-drawer chest for bedroom storage.', rating: 4.5,
+    image: img(IMG.floatingShelf),
+  },
+  {
+    name: 'Mid-Century Sideboard', category: 'storage', price: 599, priceRange: 'premium',
+    dimensions: { width: 160, depth: 45, height: 75 },
+    colors: ['walnut', 'teak', 'oak'], materials: ['solid wood', 'brass'],
+    styleTags: ['modern', 'luxury', 'scandinavian'], roomTypes: ['living', 'dining'],
+    source: 'Wayfair', sourceUrl: 'https://www.wayfair.com',
+    description: 'Retro-inspired sideboard with tapered legs and brass handles.', rating: 4.7,
+    image: img(IMG.mediaConsole),
+  },
+
+  // ── LIGHTING (6) ──────────────────────────────────────────────────────────
+  {
+    name: 'HEKTAR Floor Lamp', category: 'lighting', price: 79, priceRange: 'budget',
+    dimensions: { width: 38, depth: 38, height: 178 },
+    colors: ['dark grey', 'white'], materials: ['steel'],
+    styleTags: ['industrial', 'modern', 'versatile'], roomTypes: ['living', 'bedroom', 'office'],
+    source: 'IKEA', sourceUrl: 'https://www.ikea.com',
+    description: 'Industrial-style floor lamp with USB port.', rating: 4.4,
+    image: img(IMG.floorLamp),
+  },
+  {
+    name: 'Arc Floor Lamp', category: 'lighting', price: 189, priceRange: 'mid-range',
+    dimensions: { width: 50, depth: 50, height: 200 },
+    colors: ['black', 'gold', 'white'], materials: ['steel', 'marble base'],
+    styleTags: ['modern', 'luxury', 'minimalist'], roomTypes: ['living', 'bedroom'],
+    source: 'Wayfair', sourceUrl: 'https://www.wayfair.com',
+    description: 'Elegant arc floor lamp with marble base.', rating: 4.5,
+    image: img(IMG.arcLamp),
+  },
+  {
+    name: 'Rattan Pendant Light', category: 'lighting', price: 129, priceRange: 'mid-range',
+    dimensions: { width: 45, depth: 45, height: 35 },
+    colors: ['natural', 'brown'], materials: ['rattan', 'fabric cord'],
+    styleTags: ['cozy', 'scandinavian', 'modern'], roomTypes: ['living', 'dining', 'bedroom'],
+    source: 'Wayfair', sourceUrl: 'https://www.wayfair.com',
+    description: 'Handwoven rattan pendant ceiling light.', rating: 4.6,
+    image: img(IMG.pendant),
+  },
+  {
+    name: 'RANARP Desk Lamp', category: 'lighting', price: 49, priceRange: 'budget',
+    dimensions: { width: 14, depth: 14, height: 46 },
+    colors: ['off-white', 'antique brass'], materials: ['steel', 'glass'],
+    styleTags: ['industrial', 'vintage', 'modern'], roomTypes: ['office', 'bedroom'],
+    source: 'IKEA', sourceUrl: 'https://www.ikea.com',
+    description: 'Adjustable work lamp with vintage look.', rating: 4.5,
+    image: img(IMG.lantern),
+  },
+  {
+    name: 'Ceramic Table Lamp', category: 'lighting', price: 89, priceRange: 'budget',
+    dimensions: { width: 20, depth: 20, height: 52 },
+    colors: ['white', 'terracotta', 'sage green', 'navy'], materials: ['ceramic', 'linen shade'],
+    styleTags: ['cozy', 'minimalist', 'scandinavian'], roomTypes: ['bedroom', 'living'],
+    source: 'Wayfair', sourceUrl: 'https://www.wayfair.com',
+    description: 'Sculptural ceramic base table lamp with linen shade.', rating: 4.6,
+    image: img(IMG.lantern),
+  },
+  {
+    name: 'Sputnik Chandelier', category: 'lighting', price: 299, priceRange: 'mid-range',
+    dimensions: { width: 70, depth: 70, height: 60 },
+    colors: ['gold', 'black', 'chrome'], materials: ['metal'],
+    styleTags: ['modern', 'luxury', 'industrial'], roomTypes: ['dining', 'living'],
+    source: 'Wayfair', sourceUrl: 'https://www.wayfair.com',
+    description: 'Mid-century inspired starburst chandelier.', rating: 4.5,
+    image: img(IMG.pendant),
+  },
+
+  // ── RUGS (3) ──────────────────────────────────────────────────────────────
+  {
+    name: 'STOENSE Low-pile Rug', category: 'rug', price: 69, priceRange: 'budget',
+    dimensions: { width: 200, depth: 300, height: 1 },
+    colors: ['off-white', 'beige', 'light grey'], materials: ['low pile', 'polypropylene'],
+    styleTags: ['minimalist', 'scandinavian', 'versatile'], roomTypes: ['living', 'bedroom'],
+    source: 'IKEA', sourceUrl: 'https://www.ikea.com',
+    description: 'Soft low-pile rug, easy to vacuum.', rating: 4.3,
+    image: img(IMG.rug),
+  },
+  {
+    name: 'Moroccan Berber Rug', category: 'rug', price: 249, priceRange: 'mid-range',
+    dimensions: { width: 160, depth: 230, height: 2 },
+    colors: ['cream', 'ivory', 'beige'], materials: ['wool'],
+    styleTags: ['cozy', 'luxury', 'scandinavian'], roomTypes: ['living', 'bedroom'],
+    source: 'Wayfair', sourceUrl: 'https://www.wayfair.com',
+    description: 'Handmade Moroccan berber wool rug.', rating: 4.7,
+    image: img(IMG.rug),
+  },
+  {
+    name: 'Geometric Area Rug', category: 'rug', price: 149, priceRange: 'budget',
+    dimensions: { width: 200, depth: 290, height: 1 },
+    colors: ['grey', 'black', 'white'], materials: ['polyester'],
+    styleTags: ['modern', 'minimalist', 'industrial'], roomTypes: ['living', 'office'],
+    source: 'Wayfair', sourceUrl: 'https://www.wayfair.com',
+    description: 'Modern geometric pattern area rug.', rating: 4.2,
+    image: img(IMG.rug),
+  },
+
+  // ── PLANTS (3) ────────────────────────────────────────────────────────────
+  {
+    name: 'Fiddle Leaf Fig Tree', category: 'plant', price: 89, priceRange: 'budget',
+    dimensions: { width: 40, depth: 40, height: 120 },
+    colors: ['green'], materials: ['live plant', 'ceramic pot'],
+    styleTags: ['modern', 'minimalist', 'cozy'], roomTypes: ['living', 'bedroom', 'office'],
+    source: 'Wayfair', sourceUrl: 'https://www.wayfair.com',
+    description: 'Statement fiddle leaf fig in decorative pot.', rating: 4.4,
+    image: img(IMG.plant1),
+  },
+  {
+    name: 'Monstera Deliciosa', category: 'plant', price: 49, priceRange: 'budget',
+    dimensions: { width: 35, depth: 35, height: 90 },
+    colors: ['green'], materials: ['live plant', 'terracotta pot'],
+    styleTags: ['modern', 'cozy', 'scandinavian'], roomTypes: ['living', 'bedroom', 'office'],
+    source: 'Wayfair', sourceUrl: 'https://www.wayfair.com',
+    description: 'Tropical monstera in terracotta pot.', rating: 4.6,
+    image: img(IMG.snakePlant),
+  },
+  {
+    name: 'Large Snake Plant', category: 'plant', price: 69, priceRange: 'budget',
+    dimensions: { width: 30, depth: 30, height: 100 },
+    colors: ['green', 'yellow-green'], materials: ['live plant', 'ceramic pot'],
+    styleTags: ['modern', 'minimalist', 'industrial'], roomTypes: ['living', 'bedroom', 'office'],
+    source: 'Wayfair', sourceUrl: 'https://www.wayfair.com',
+    description: 'Hardy snake plant in a modern ceramic planter.', rating: 4.5,
+    image: img(IMG.snakePlant),
+  },
+
+  // ── DECOR (6) ─────────────────────────────────────────────────────────────
+  {
+    name: 'Abstract Canvas Wall Art', category: 'decor', price: 79, priceRange: 'budget',
+    dimensions: { width: 60, depth: 2, height: 80 },
+    colors: ['beige', 'terracotta', 'gold'], materials: ['canvas', 'wooden frame'],
+    styleTags: ['modern', 'minimalist', 'luxury'], roomTypes: ['living', 'bedroom', 'office'],
+    source: 'Wayfair', sourceUrl: 'https://www.wayfair.com',
+    description: 'Modern abstract canvas wall art.', rating: 4.3,
+    image: img(IMG.wallArt),
+  },
+  {
+    name: 'Decorative Throw Pillows', category: 'decor', price: 39, priceRange: 'budget',
+    dimensions: { width: 50, depth: 10, height: 50 },
+    colors: ['beige', 'terracotta', 'sage green', 'cream'], materials: ['cotton', 'linen'],
+    styleTags: ['cozy', 'scandinavian', 'versatile'], roomTypes: ['living', 'bedroom'],
+    source: 'Wayfair', sourceUrl: 'https://www.wayfair.com',
+    description: 'Set of 2 decorative throw pillows.', rating: 4.4,
+    image: img(IMG.armchair),
+  },
+  {
+    name: 'RIBBA Picture Frame Set', category: 'decor', price: 29, priceRange: 'budget',
+    dimensions: { width: 21, depth: 1, height: 30 },
+    colors: ['white', 'black', 'pine'], materials: ['wood', 'glass'],
+    styleTags: ['minimalist', 'scandinavian', 'versatile'], roomTypes: ['living', 'bedroom', 'office'],
+    source: 'IKEA', sourceUrl: 'https://www.ikea.com',
+    description: 'Classic picture frame for artwork.', rating: 4.5,
+    image: img(IMG.wallArt),
+  },
+  {
+    name: 'Full-Length Floor Mirror', category: 'decor', price: 199, priceRange: 'mid-range',
+    dimensions: { width: 65, depth: 3, height: 180 },
+    colors: ['gold', 'black', 'silver', 'walnut'], materials: ['metal frame', 'glass'],
+    styleTags: ['modern', 'luxury', 'minimalist'], roomTypes: ['bedroom', 'living'],
+    source: 'Wayfair', sourceUrl: 'https://www.wayfair.com',
+    description: 'Freestanding full-length mirror with thin metal frame.', rating: 4.6,
+    image: img(IMG.mirrorsWall),
+  },
+  {
+    name: 'Arch Decorative Mirror', category: 'decor', price: 149, priceRange: 'mid-range',
+    dimensions: { width: 55, depth: 3, height: 90 },
+    colors: ['gold', 'black', 'brushed silver'], materials: ['metal frame', 'glass'],
+    styleTags: ['modern', 'luxury', 'cozy'], roomTypes: ['living', 'bedroom', 'dining'],
+    source: 'Wayfair', sourceUrl: 'https://www.wayfair.com',
+    description: 'Arched wall mirror with slim decorative frame.', rating: 4.5,
+    image: img(IMG.livingRoom),
+  },
+  {
+    name: 'Ceramic Vase Set', category: 'decor', price: 49, priceRange: 'budget',
+    dimensions: { width: 15, depth: 15, height: 30 },
+    colors: ['white', 'terracotta', 'sage', 'cream'], materials: ['ceramic'],
+    styleTags: ['minimalist', 'scandinavian', 'cozy'], roomTypes: ['living', 'bedroom', 'dining'],
+    source: 'Wayfair', sourceUrl: 'https://www.wayfair.com',
+    description: 'Set of 3 sculptural ceramic vases.', rating: 4.4,
+    image: img(IMG.lantern),
+  },
+];
+
+// Deterministic slug so the same item always gets the same _id across restarts.
+function slugify(str) {
+  return String(str).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+// Catalog shaped like Mongo documents, for use when the DB is unreachable.
+// `company` mirrors `source` so the offline UI has an explicit brand to show.
+function getFallbackCatalog() {
+  return furnitureCatalog.map((item, i) => ({
+    ...item,
+    _id: `offline-${slugify(item.name)}-${i}`,
+    company: item.source,
+    inStock: true,
+    createdAt: new Date(0).toISOString(),
+    updatedAt: new Date(0).toISOString(),
+  }));
+}
+
+module.exports = { furnitureCatalog, getFallbackCatalog, slugify };

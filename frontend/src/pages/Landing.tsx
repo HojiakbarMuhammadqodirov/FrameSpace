@@ -2,63 +2,45 @@ import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   House, Sparkle, ShoppingCart, PaintBrush, FloppyDisk, Ruler,
-  Sun, Moon, ArrowRight, CheckCircle,
-  TwitterLogo, InstagramLogo, YoutubeLogo, EnvelopeSimple,
+  Sun, Moon, ArrowRight, CheckCircle, ArrowsClockwise, List, X,
 } from '@phosphor-icons/react'
 import * as THREE from 'three'
 import AuthModal from '../components/auth/AuthModal'
+import MarketingFooter from '../components/common/MarketingFooter'
+import LanguageToggle from '../components/common/LanguageToggle'
 import useStore from '../store/useStore'
 import { useTheme } from '../hooks/useTheme'
+import { useReveal } from '../hooks/useReveal'
+import { useLang } from '../i18n/LanguageProvider'
 
+// Feature cards — copy comes from translations, keyed by `key`.
 const FEATURES = [
-  {
-    Icon: House,
-    title: '3D room visualization',
-    desc: 'See your room come to life with real-time 3D rendering, realistic lighting, and textured surfaces. Orbit, zoom, and inspect every detail before buying.',
-  },
-  {
-    Icon: Sparkle,
-    title: 'AI recommendations',
-    desc: 'Get smart furniture suggestions based on your room size, style preference, lighting, and budget.',
-  },
-  {
-    Icon: ShoppingCart,
-    title: 'Shop the best deals',
-    desc: 'Browse curated furniture from top stores with price comparisons and direct purchase links.',
-  },
-  {
-    Icon: PaintBrush,
-    title: 'Full customization',
-    desc: 'Drag, rotate, and resize furniture. Customize colors, materials, and textures in real time.',
-  },
-  {
-    Icon: FloppyDisk,
-    title: 'Save and share',
-    desc: 'Save multiple room designs, load them anytime, and share links with friends or designers.',
-  },
-  {
-    Icon: Ruler,
-    title: 'Precision room editor',
-    desc: 'Set exact dimensions, add windows, doors, and customize wall colors, floor types, and more.',
-  },
+  { Icon: House,        key: 'room3d' },
+  { Icon: Sparkle,      key: 'ai' },
+  { Icon: ShoppingCart, key: 'shop' },
+  { Icon: PaintBrush,   key: 'customize' },
+  { Icon: FloppyDisk,   key: 'save' },
+  { Icon: Ruler,        key: 'precision' },
 ]
 
 const NAV_LINKS = [
-  { label: 'Shop All',      to: '/shop' },
-  { label: 'Room Designer', to: '/dashboard' },
-  { label: 'Collections',   to: '/collections' },
-  { label: 'Inspiration',   to: '/inspiration' },
-  { label: 'About',         to: '/about' },
-  { label: 'Contact',       to: '/contact' },
+  { key: 'shopAll',      to: '/shop' },
+  { key: 'roomDesigner', to: '/dashboard' },
+  { key: 'collections',  to: '/collections' },
+  { key: 'inspiration',  to: '/inspiration' },
+  { key: 'about',        to: '/about' },
+  { key: 'contact',      to: '/contact' },
 ]
 
 export default function Landing() {
   const [modal, setModal] = useState<'login' | 'signup' | null>(null)
   const [scrolled, setScrolled] = useState(false)
   const [hintHidden, setHintHidden] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   const { token } = useStore() as any
   const navigate = useNavigate()
   const { theme, toggle } = useTheme()
+  const { t } = useLang()
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const wrapRef = useRef<HTMLDivElement | null>(null)
@@ -69,17 +51,7 @@ export default function Landing() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  useEffect(() => {
-    const els = document.querySelectorAll('[data-reveal]')
-    const obs = new IntersectionObserver(
-      entries => entries.forEach(e => {
-        if (e.isIntersecting) { e.target.classList.add('revealed'); obs.unobserve(e.target) }
-      }),
-      { threshold: 0.1 }
-    )
-    els.forEach(el => obs.observe(el))
-    return () => obs.disconnect()
-  }, [])
+  useReveal()
 
   // ── THREE.JS INTERACTIVE 3D ROOM INTEGRATION ──
   useEffect(() => {
@@ -546,7 +518,7 @@ export default function Landing() {
     fill.position.set(5, 4, 5)
     scene.add(fill)
 
-    /* ── Orbit Controls — Masofani sal uzoqlashtirilgan default holati ── */
+    /* ── Orbit controls — default camera pulled back slightly ── */
     const pivot = new THREE.Vector3(0, 1.1, 0)
     let theta  = Math.PI * 0.30
     let phi    = 0.42
@@ -703,10 +675,19 @@ export default function Landing() {
       <div className={`fixed top-0 left-0 right-0 z-50 transition-[opacity,transform] duration-300 ${
         scrolled ? 'opacity-0 pointer-events-none -translate-y-1' : 'opacity-100'
       }`}>
-        <div className="flex items-center justify-between px-10 md:px-16 py-5">
+        <div className="flex items-center justify-between px-5 sm:px-10 md:px-16 py-5">
           
-          {/* FIX: Ortiqcha yozuvlar va jigarrang kvadrat butunlay olib tashlandi, faqat toza public logo qoldi */}
-          <Link to="/" className="flex items-center">
+          {/* Mobile: menu button in place of the logo */}
+          <button
+            onClick={() => setMenuOpen(o => !o)}
+            aria-label="Menu"
+            aria-expanded={menuOpen}
+            className="md:hidden w-10 h-10 -ml-1 rounded-full flex items-center justify-center text-brand-dark hover:bg-brand-grey/60 transition-colors ease-spring duration-150"
+          >
+            {menuOpen ? <X size={20} weight="regular" /> : <List size={20} weight="regular" />}
+          </button>
+
+          <Link to="/" className="hidden md:flex items-center">
             <img src="/logo.png" alt="FrameSpace Logo" className="h-10 w-auto object-contain" />
           </Link>
 
@@ -714,23 +695,24 @@ export default function Landing() {
             {NAV_LINKS.map(l => (
               <Link key={l.to} to={l.to}
                 className="text-sm font-medium text-brand-dark/70 hover:text-brand-dark transition-colors duration-150">
-                {l.label}
+                {t(`nav.${l.key}`)}
               </Link>
             ))}
           </div>
 
-          <div className="flex items-center gap-2.5">
-            <button onClick={toggle} title={theme === 'light' ? 'Dark mode' : 'Light mode'}
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            <LanguageToggle />
+            <button onClick={toggle} title={theme === 'light' ? t('common.darkMode') : t('common.lightMode')}
               className="w-8 h-8 rounded-full flex items-center justify-center text-brand-grey-dark hover:text-brand-dark hover:bg-brand-grey/60 transition-colors ease-spring duration-150">
               {theme === 'light' ? <Moon size={15} weight="regular" /> : <Sun size={15} weight="regular" />}
             </button>
             {token ? (
-              <Link to="/dashboard" className="btn-primary text-sm py-2 px-5">My dashboard</Link>
+              <Link to="/dashboard" className="btn-primary text-sm py-2 px-5">{t('common.myDashboard')}</Link>
             ) : (
               <>
-                <button onClick={() => setModal('login')} className="btn-ghost text-sm py-2 px-4">Sign in</button>
-                <button onClick={() => setModal('signup')} className="btn-primary text-sm py-2 px-5 flex items-center gap-1.5">
-                  Get started <ArrowRight size={13} weight="bold" />
+                <button onClick={() => setModal('login')} className="btn-ghost text-sm py-2 px-4 hidden sm:block">{t('common.signIn')}</button>
+                <button onClick={() => setModal('signup')} className="btn-primary text-sm py-2 px-4 sm:px-5 flex items-center gap-1.5">
+                  {t('common.getStarted')} <ArrowRight size={13} weight="bold" />
                 </button>
               </>
             )}
@@ -739,89 +721,139 @@ export default function Landing() {
       </div>
 
       {/* ── Island navbar — appears on scroll ── */}
-      <div className={`fixed top-5 left-1/2 -translate-x-1/2 z-50 transition-[opacity,transform] duration-300 ${
+      <div className={`fixed top-5 left-1/2 -translate-x-1/2 z-50 max-w-[calc(100vw-1.5rem)] transition-[opacity,transform] duration-300 ${
         scrolled ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-2 pointer-events-none'
       }`}>
         <nav className="flex items-center gap-3 px-4 py-2.5 bg-surface-raised/90 backdrop-blur-2xl rounded-full border border-brand-grey shadow-float whitespace-nowrap">
           
-          {/* FIX: Island navbardagi ortiqcha span matni va kvadrat olib tashlandi, faqat toza public logo qoldi */}
-          <Link to="/" className="flex items-center">
+          <button
+            onClick={() => setMenuOpen(o => !o)}
+            aria-label="Menu"
+            aria-expanded={menuOpen}
+            className="sm:hidden w-7 h-7 rounded-full flex items-center justify-center text-brand-dark hover:bg-brand-grey transition-colors ease-spring duration-150"
+          >
+            {menuOpen ? <X size={16} weight="regular" /> : <List size={16} weight="regular" />}
+          </button>
+
+          <Link to="/" className="hidden sm:flex items-center">
             <img src="/logo.png" alt="FrameSpace Logo" className="h-6 w-auto object-contain" />
-          </Link> 
+          </Link>
 
           <div className="w-px h-4 bg-brand-grey" />
 
           <div className="hidden sm:flex items-center gap-4">
-            <Link to="/shop" className="text-xs font-medium text-brand-grey-dark hover:text-brand-dark transition-colors duration-150">Shop</Link>
-            <Link to="/inspiration" className="text-xs font-medium text-brand-grey-dark hover:text-brand-dark transition-colors duration-150">Inspiration</Link>
-            <Link to="/about" className="text-xs font-medium text-brand-grey-dark hover:text-brand-dark transition-colors duration-150">About</Link>
+            <Link to="/shop" className="text-xs font-medium text-brand-grey-dark hover:text-brand-dark transition-colors duration-150">{t('nav.shop')}</Link>
+            <Link to="/inspiration" className="text-xs font-medium text-brand-grey-dark hover:text-brand-dark transition-colors duration-150">{t('nav.inspiration')}</Link>
+            <Link to="/about" className="text-xs font-medium text-brand-grey-dark hover:text-brand-dark transition-colors duration-150">{t('nav.about')}</Link>
           </div>
 
           <div className="w-px h-4 bg-brand-grey hidden sm:block" />
 
           <div className="flex items-center gap-1.5">
+            <LanguageToggle />
             <button onClick={toggle}
               className="w-7 h-7 rounded-full flex items-center justify-center text-brand-grey-dark hover:text-brand-dark hover:bg-brand-grey transition-colors ease-spring duration-150">
               {theme === 'light' ? <Moon size={13} weight="regular" /> : <Sun size={13} weight="regular" />}
             </button>
             {token ? (
-              <Link to="/dashboard" className="btn-primary text-xs py-1.5 px-4">Dashboard</Link>
+              <Link to="/dashboard" className="btn-primary text-xs py-1.5 px-4">{t('common.dashboard')}</Link>
             ) : (
               <>
-                <button onClick={() => setModal('login')} className="btn-ghost text-xs py-1.5 px-3">Sign in</button>
-                <button onClick={() => setModal('signup')} className="btn-primary text-xs py-1.5 px-4">Get started</button>
+                <button onClick={() => setModal('login')} className="btn-ghost text-xs py-1.5 px-3 hidden sm:block">{t('common.signIn')}</button>
+                <button onClick={() => setModal('signup')} className="btn-primary text-xs py-1.5 px-4">{t('common.getStarted')}</button>
               </>
             )}
           </div>
         </nav>
       </div>
 
-      {/* ── Hero — Ikki ustunli split qism ── */}
+      {/* Mobile nav menu — revealed by the menu button that replaces the logo on phones */}
+      {menuOpen && (
+        <div className="md:hidden fixed top-20 inset-x-0 mx-auto z-50 w-[min(20rem,calc(100vw-1.5rem))] bg-surface-raised/95 backdrop-blur-2xl rounded-2xl border border-brand-grey shadow-float p-2 animate-slide-up">
+          {NAV_LINKS.map(l => (
+            <Link
+              key={l.to}
+              to={l.to}
+              onClick={() => setMenuOpen(false)}
+              className="block px-3 py-2.5 rounded-xl text-sm font-medium text-brand-dark hover:bg-brand-grey transition-colors"
+            >
+              {t(`nav.${l.key}`)}
+            </Link>
+          ))}
+          <div className="border-t border-brand-grey my-1.5" />
+          {token ? (
+            <Link
+              to="/dashboard"
+              onClick={() => setMenuOpen(false)}
+              className="btn-primary w-full text-sm py-2.5 flex items-center justify-center gap-2"
+            >
+              {t('common.myDashboard')} <ArrowRight size={13} weight="bold" />
+            </Link>
+          ) : (
+            <div className="flex gap-2">
+              <button
+                onClick={() => { setMenuOpen(false); setModal('login') }}
+                className="btn-secondary flex-1 text-sm py-2.5"
+              >
+                {t('common.signIn')}
+              </button>
+              <button
+                onClick={() => { setMenuOpen(false); setModal('signup') }}
+                className="btn-primary flex-1 text-sm py-2.5"
+              >
+                {t('common.getStarted')}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Hero — two-column split ── */}
       <section className="min-h-[100dvh] flex items-center px-8 md:px-16 pt-16 pb-10">
         <div className="max-w-6xl mx-auto w-full">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-20 items-center">
 
-            {/* Chap tomondagi matnlar ── */}
+            {/* Left column — copy ── */}
             <div>
               <div data-reveal className="inline-flex items-center gap-2 bg-brand-brown/10 text-brand-brown text-xs font-semibold px-3 py-1.5 rounded-full mb-5">
                 <span className="w-1.5 h-1.5 bg-brand-brown rounded-full animate-pulse" />
-                AI-powered room design
+                {t('landing.badge')}
               </div>
 
               <h1 data-reveal data-delay="100"
-                className="text-[3rem] sm:text-[3.5rem] lg:text-[4rem] font-bold text-brand-dark leading-[1.03] tracking-tighter mb-6">
-                Design your<br />
-                perfect room<br />
-                in <span className="text-brand-brown">3D</span>
+                className="text-[2.5rem] sm:text-[3.5rem] lg:text-[4rem] font-bold text-brand-dark leading-[1.03] tracking-tighter mb-6">
+                {t('landing.heroTitle1')}<br />
+                <em className="font-display font-normal italic text-brand-brown">{t('landing.heroTitleEm')}</em><br />
+                {t('landing.heroTitle3')}
               </h1>
 
               <p data-reveal data-delay="150"
                 className="text-brand-grey-dark text-lg leading-relaxed mb-8 max-w-[42ch]"
                 style={{ textWrap: 'pretty' }}>
-                Visualize your dream space with real-time 3D rendering, get AI-powered furniture recommendations, and shop curated deals — all in one place.
+                {t('landing.heroSubtitle')}
               </p>
 
               <div data-reveal data-delay="200" className="flex flex-col sm:flex-row gap-3 mb-8">
                 {token ? (
                   <button onClick={() => navigate('/dashboard')}
                     className="btn-primary text-base px-8 py-3 flex items-center gap-2">
-                    Continue designing <ArrowRight size={16} weight="bold" />
+                    {t('common.continueDesigning')} <ArrowRight size={16} weight="bold" />
                   </button>
                 ) : (
                   <>
                     <button onClick={() => setModal('signup')}
                       className="btn-primary text-base px-8 py-3 flex items-center gap-2">
-                      Start designing free <ArrowRight size={16} weight="bold" />
+                      {t('common.startDesigningFree')} <ArrowRight size={16} weight="bold" />
                     </button>
                     <button onClick={() => setModal('login')} className="btn-secondary text-base px-8 py-3">
-                      Sign in
+                      {t('common.signIn')}
                     </button>
                   </>
                 )}
               </div>
 
               <div data-reveal data-delay="250" className="flex flex-wrap items-center gap-5">
-                {['Free to start', 'No credit card required', '50+ furniture styles'].map(label => (
+                {[t('landing.free'), t('landing.noCard'), t('landing.styles50')].map(label => (
                   <span key={label} className="flex items-center gap-1.5 text-xs text-brand-grey-dark">
                     <CheckCircle size={13} weight="fill" className="text-brand-brown flex-shrink-0" />
                     {label}
@@ -830,7 +862,7 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* O'ng tomon — Masofasi sal uzoqlashtirilgan, kesilmaydigan mutlaqo toza 3D canvas viewport */}
+            {/* Right column — interactive 3D canvas viewport */}
             <div data-reveal data-delay="100" 
               ref={wrapRef}
               className="relative w-full h-[400px] sm:h-[500px] lg:h-[600px] overflow-visible cursor-grab active:cursor-grabbing select-none"
@@ -840,10 +872,11 @@ export default function Landing() {
                 className="w-full h-full block" 
                 aria-label="Interactive 3D preview of a furnished room — drag to rotate"
               />
-              <div className={`absolute bottom-0 left-1/2 -translate-x-1/2 font-medium text-[10px] tracking-wider uppercase text-brand-dark/50 bg-white/60 backdrop-blur-md px-3 py-1 rounded-full border border-brand-dark/5 pointer-events-none transition-opacity duration-500 ${
+              <div className={`absolute bottom-0 left-1/2 -translate-x-1/2 flex items-center gap-1.5 font-medium text-[10px] tracking-wider uppercase text-brand-dark/50 bg-white/60 backdrop-blur-md px-3 py-1 rounded-full border border-brand-dark/5 pointer-events-none transition-opacity duration-500 ${
                 hintHidden ? 'opacity-0' : 'opacity-100'
               }`}>
-                ⟳ Drag to rotate / Scroll to zoom
+                <ArrowsClockwise size={11} weight="bold" />
+                {t('landing.dragHint')}
               </div>
             </div>
 
@@ -856,10 +889,10 @@ export default function Landing() {
         <div className="max-w-5xl mx-auto">
           <div data-reveal className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-3">
             <p className="text-xs font-semibold text-brand-brown uppercase tracking-[0.15em]">
-              What's included
+              {t('landing.whatsIncluded')}
             </p>
             <div className="flex items-center gap-5 text-[11px] text-brand-grey-dark font-medium">
-              {['50+ furniture styles', 'Real-time 3D', 'AI-powered'].map((s, i) => (
+              {[t('landing.styles50'), t('landing.realtime3d'), t('landing.aiPowered')].map((s, i) => (
                 <span key={s} className="flex items-center gap-1.5">
                   {i !== 0 && <span className="w-1 h-1 rounded-full bg-brand-grey inline-block" />}
                   {s}
@@ -871,12 +904,12 @@ export default function Landing() {
           <h2 data-reveal data-delay="100"
             className="text-3xl md:text-4xl font-bold text-brand-dark tracking-tighter mb-10"
             style={{ textWrap: 'balance' }}>
-            Everything you need to design
+            {t('landing.everythingTitle')}
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             
-            {/* 1. Katta karta — 2 ta col va 2 ta rowni to'liq egallaydi */}
+            {/* Featured card — spans 2 cols and 2 rows */}
             <div data-reveal data-delay="150"
               className="md:col-span-2 md:row-span-2 p-1.5 rounded-[1.5rem] bg-brand-brown/5 border border-brand-brown/20 group hover:-translate-y-1 transition-transform ease-spring duration-300">
               <div className="h-full rounded-[calc(1.5rem-0.375rem)] bg-brand-grey-light p-8 flex flex-col justify-between min-h-[280px] overflow-hidden relative"
@@ -894,7 +927,7 @@ export default function Landing() {
                     style={{ top: '65%', left: '22%', animation: 'pulse 3s ease-in-out 1.6s infinite' }} />
                   <div className="absolute top-2 left-2 flex items-center gap-1 bg-white/80 backdrop-blur-sm rounded-full px-2 py-0.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                    <span className="text-[9px] font-semibold text-brand-dark">Live preview</span>
+                    <span className="text-[9px] font-semibold text-brand-dark">{t('landing.realtime3d')}</span>
                   </div>
                 </div>
 
@@ -903,25 +936,25 @@ export default function Landing() {
                   <div className="w-12 h-12 bg-brand-brown rounded-xl flex items-center justify-center mb-4 group-hover:rotate-6 transition-transform ease-spring duration-300">
                     <House size={24} weight="fill" className="text-white" />
                   </div>
-                  <h3 className="font-semibold text-brand-dark text-xl mb-2 tracking-tight">3D room visualization</h3>
+                  <h3 className="font-semibold text-brand-dark text-xl mb-2 tracking-tight">{t('landing.features.room3dLong.title')}</h3>
                   <p className="text-sm text-brand-grey-dark leading-relaxed max-w-[46ch]">
-                    See your room come to life with real-time 3D rendering, realistic lighting, and textured surfaces. Orbit, zoom, and inspect every detail before buying a single piece.
+                    {t('landing.features.room3dLong.desc')}
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Qolgan barcha 5 ta element avtomatik ravishda bo'sh kataklarni 3x3 shaklda to'ldiradi */}
-            {FEATURES.slice(1).map(({ Icon, title, desc }, i) => (
-              <div key={title} data-reveal data-delay={String((i + 2) * 100)}
+            {/* Remaining 5 features auto-fill the grid */}
+            {FEATURES.slice(1).map(({ Icon, key }, i) => (
+              <div key={key} data-reveal data-delay={String((i + 2) * 100)}
                 className="p-1.5 rounded-[1.25rem] bg-brand-dark/[0.03] border border-brand-grey group hover:-translate-y-1 transition-transform ease-spring duration-300">
                 <div className="h-full rounded-[calc(1.25rem-0.375rem)] bg-surface-raised p-6 flex flex-col"
                   style={{ boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6)' }}>
                   <div className="w-9 h-9 bg-brand-brown/10 rounded-lg flex items-center justify-center mb-3 group-hover:bg-brand-brown group-hover:rotate-6 transition-all ease-spring duration-300">
                     <Icon size={18} weight="regular" className="text-brand-brown group-hover:text-white transition-colors ease-spring duration-300" />
                   </div>
-                  <h3 className="font-semibold text-brand-dark text-sm mb-1.5 tracking-tight">{title}</h3>
-                  <p className="text-xs text-brand-grey-dark leading-relaxed">{desc}</p>
+                  <h3 className="font-semibold text-brand-dark text-sm mb-1.5 tracking-tight">{t(`landing.features.${key}.title`)}</h3>
+                  <p className="text-xs text-brand-grey-dark leading-relaxed">{t(`landing.features.${key}.desc`)}</p>
                 </div>
               </div>
             ))}
@@ -934,131 +967,32 @@ export default function Landing() {
       <section className="px-6 md:px-12 py-24 bg-brand-grey-light">
         <div className="max-w-3xl mx-auto text-center">
           <p data-reveal className="text-xs font-semibold text-brand-brown uppercase tracking-[0.15em] mb-4">
-            Ready when you are
+            {t('landing.readyWhenYouAre')}
           </p>
           <h2 data-reveal data-delay="100"
             className="text-4xl md:text-5xl font-bold text-brand-dark tracking-tighter mb-6"
             style={{ textWrap: 'balance' }}>
-            Design your dream room today
+            {t('landing.ctaTitle')}
           </h2>
           <p data-reveal data-delay="150" className="text-brand-grey-dark text-lg mb-10 max-w-lg mx-auto leading-relaxed">
-            Join thousands of designers and homeowners who use FrameSpace to bring their vision to life.
+            {t('landing.ctaSubtitle')}
           </p>
           <div data-reveal data-delay="200">
             {token ? (
               <Link to="/dashboard" className="btn-primary text-base px-8 py-3 inline-flex items-center gap-2">
-                Open my dashboard <ArrowRight size={16} weight="bold" />
+                {t('common.openDashboard')} <ArrowRight size={16} weight="bold" />
               </Link>
             ) : (
               <button onClick={() => setModal('signup')}
                 className="btn-primary text-base px-8 py-3 inline-flex items-center gap-2">
-                Start for free <ArrowRight size={16} weight="bold" />
+                {t('common.startFree')} <ArrowRight size={16} weight="bold" />
               </button>
             )}
           </div>
         </div>
       </section>
 
-      {/* ── Footer ── */}
-      <footer className="bg-brand-dark dark:bg-[#1e1b17] text-white">
-        <div className="px-8 md:px-16 pt-16 pb-10 max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
-            <div className="md:col-span-1">
-              
-              {/* FIX: Footerdagi ham ortiqcha braun kvadrat va qo'shimcha yozuv olib tashlanib, faqat toza original logo qoldirildi */}
-              <div className="flex items-center mb-4">
-                <img src="/logo.png" alt="FrameSpace Logo" className="h-8 w-auto object-contain" />
-              </div>
-              
-              <p className="text-sm text-white/55 leading-relaxed mb-6 max-w-[22ch]">
-                The smartest way to design your perfect room — in full 3D.
-              </p>
-              <div className="flex gap-3">
-                {[
-                  { Icon: TwitterLogo,   href: '#' },
-                  { Icon: InstagramLogo, href: '#' },
-                  { Icon: YoutubeLogo,   href: '#' },
-                  { Icon: EnvelopeSimple, href: '/contact' },
-                ].map(({ Icon, href }, i) => (
-                  <Link key={i} to={href}
-                    className="w-8 h-8 rounded-lg bg-white/8 hover:bg-brand-brown transition-colors ease-spring duration-150 flex items-center justify-center text-white/60 hover:text-white">
-                    <Icon size={15} weight="regular" />
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.13em] text-white/40 mb-4">Product</p>
-              <ul className="space-y-2.5">
-                {[
-                  { label: 'Room Designer', to: '/dashboard' },
-                  { label: 'Shop All Furniture', to: '/shop' },
-                  { label: 'Collections', to: '/collections' },
-                  { label: 'AI Recommendations', to: '/dashboard' },
-                  { label: 'Share & Export', to: '/dashboard' },
-                ].map(l => (
-                  <li key={l.label}>
-                    <Link to={l.to} className="text-sm text-white/55 hover:text-white transition-colors duration-150">
-                      {l.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.13em] text-white/40 mb-4">Company</p>
-              <ul className="space-y-2.5">
-                {[
-                  { label: 'About',       to: '/about' },
-                  { label: 'Inspiration', to: '/inspiration' },
-                  { label: 'Contact',     to: '/contact' },
-                  { label: 'Gallery',     to: '/gallery' },
-                ].map(l => (
-                  <li key={l.label}>
-                    <Link to={l.to} className="text-sm text-white/55 hover:text-white transition-colors duration-150">
-                      {l.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.13em] text-white/40 mb-4">Stay in the loop</p>
-              <p className="text-sm text-white/55 leading-relaxed mb-4">
-                Design tips, new arrivals, and inspiration — in your inbox.
-              </p>
-              <form onSubmit={e => e.preventDefault()} className="flex gap-2">
-                <input
-                  type="email"
-                  placeholder="you@email.com"
-                  className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-white/10 border border-white/15 text-white text-xs placeholder:text-white/30 focus:outline-none focus:border-brand-brown transition-colors"
-                />
-                <button type="submit"
-                  className="px-3 py-2 rounded-lg bg-brand-brown hover:bg-brand-brown-dark transition-colors ease-spring duration-150 flex-shrink-0">
-                  <ArrowRight size={14} weight="bold" className="text-white" />
-                </button>
-              </form>
-              <p className="text-[10px] text-white/30 mt-2">No spam. Unsubscribe anytime.</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="border-t border-white/10 px-8 md:px-16 py-5">
-          <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p className="text-[11px] text-white/35">© 2025 FrameSpace. Design your perfect space.</p>
-            <div className="flex items-center gap-5">
-              {['Privacy Policy', 'Terms of Service', 'Cookie Policy'].map(l => (
-                <Link key={l} to="#" className="text-[11px] text-white/35 hover:text-white/70 transition-colors duration-150">
-                  {l}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      </footer>
+      <MarketingFooter />
 
       {modal && <AuthModal initialMode={modal} onClose={() => setModal(null)} />}
     </div>
